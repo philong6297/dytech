@@ -1,7 +1,13 @@
 /**
  * @file http_server.cpp
  * @author Yukun J
- * @expectation this is the
+ * @expectation this is
+ *
+ *
+
+
+ * * *
+ * the
 
 
 
@@ -14,7 +20,13 @@
 
 
  * * * http
- * server for illustration and test
+ * server for
+ * illustration
+
+ * * and
+
+
+ * * * test
  * purpose
 
  * *
@@ -22,12 +34,16 @@
  * *
  * @init_date
 
+ *
  * * Jan
  * 3
+ *
+ *
  * 2023
 
  */
 
+#include <system_error>
 #include "core/turtle_server.h"
 #include "http/cgier.h"
 #include "http/header.h"
@@ -67,6 +83,7 @@ namespace longlp::HTTP {
       else {
         std::string resource_full_path =
           serving_directory + request.GetResourceUrl();
+        LOG_INFO(resource_full_path);
         if (IsCgiRequest(resource_full_path)) {
           // dynamic CGI request
           Cgier cgier = Cgier::ParseCgier(resource_full_path);
@@ -101,6 +118,7 @@ namespace longlp::HTTP {
         else {
           // static resource request
           if (!IsFileExists(resource_full_path)) {
+            LOG_INFO(resource_full_path + " not exist");
             auto response = Response::Make404Response();
             no_more_parse = true;
             response.Serialize(response_buf);
@@ -157,7 +175,7 @@ int main(int argc, char* argv[]) {
   }
 
   longlp::NetAddress address("127.0.0.1", 8080);
-  std::string directory = "./pages/";
+  std::string directory = "/home/longlp/dytech/build/demo/http-server/pages";
   if (argc >= 2) {
     auto port = static_cast<uint16_t>(std::strtol(argv[1], nullptr, 10));
     if (port == 0) {

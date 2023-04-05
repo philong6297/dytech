@@ -3,14 +3,23 @@
  * @author Yukun J
  * @expectation this
  *
+ *
+ *
+ *
  * implementation file should be compatible to compile in C++
  * program on
- *
- * Linux
+
+ * *
+
+
+ * * * Linux
  * @init_date Jan 28 2023
  *
- * This is the unit test file for
+ * This is the unit test file
+ * for
  *
+
+ * *
  * core/Buffer class
  */
 
@@ -18,16 +27,15 @@
 
 #include <cstring>
 
-#include "catch2/catch_test_macros.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 /* for convenience reason */
 using longlp::Buffer;
-using longlp::kDefaultCapacity;
 
 TEST_CASE("[core/buffer]") {
-  Buffer buf(kDefaultCapacity);
+  Buffer buf(Buffer::kDefaultCapacity);
   REQUIRE(buf.Size() == 0);
-  REQUIRE(buf.Capacity() == kDefaultCapacity);
+  REQUIRE(buf.Capacity() == Buffer::kDefaultCapacity);
 
   SECTION("appending c-str into buffer from both side") {
     const char msg1[1024] = "Greeting from beginning!";

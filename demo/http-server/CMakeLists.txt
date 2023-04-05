@@ -9,9 +9,9 @@ add_dependencies(http_server copy_data)
 
 add_custom_target(
   copy_data ALL
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ./pages ${CMAKE_BINARY_DIR}/demo/http-server
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ./pages ${CMAKE_BINARY_DIR}/demo/http-server/pages
   VERBATIM
-  WORKING_DIRECTORY ${LONGLP_PROJECT_DIR}/demo/http-server
+  WORKING_DIRECTORY ${LONGLP_PROJECT_DIR}/demo/http-server/
   USES_TERMINAL
   COMMENT
     "copy ${LONGLP_PROJECT_DIR}/demo/http-server/pages to ${CMAKE_BINARY_DIR}/demo/http-server/pages"

@@ -1,13 +1,8 @@
 # 'make benchmark' will run http_server
-set(WEBBENCH_DIR ${PROJECT_SOURCE_DIR}/webbench)
+set(WEBBENCH_DIR ${LONGLP_PROJECT_BENCHMARK_DIR})
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-  set(CONCURRENCY 10500) # concurrent client number
-  set(DURATION 5) # stress test duration
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set(CONCURRENCY 105)
-  set(DURATION 10)
-endif()
+set(CONCURRENCY 10500) # concurrent client number
+set(DURATION 5) # stress test duration
 
 add_custom_target(
   benchmark

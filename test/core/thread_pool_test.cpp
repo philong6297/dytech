@@ -2,12 +2,15 @@
  * @file thread_pool_test.cpp
  * @author Yukun J
  * @expectation this
+ *
  * implementation file should be compatible to compile in C++
  * program on
+ *
  * Linux
  * @init_date Jan 29 2023
  *
  * This is the unit test file for
+ *
  * core/ThreadPool class
  */
 
@@ -15,7 +18,7 @@
 
 #include <atomic>
 
-#include "catch2/catch_test_macros.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 /* for convenience reason */
 using longlp::ThreadPool;
