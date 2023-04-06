@@ -1,21 +1,6 @@
-/**
- * @file connection_test.cpp
- * @author Yukun J
- * @expectation this
- *
- *
- * implementation file should be compatible to compile in C++
- * program on
- *
-
- * * Linux
- * @init_date Jan 29 2023
- *
- * This is the unit test file for
- *
- *
- * core/Connection class
- */
+// Copyright 2023 Long Le Phi. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #include "core/connection.h"
 
@@ -30,16 +15,14 @@
 #include "core/poller.h"
 #include "core/socket.h"
 
-/* for convenience reason */
 using longlp::Connection;
 using longlp::NetAddress;
-using longlp::POLL_ADD;
-using longlp::POLL_ET;
-using longlp::POLL_READ;
+using longlp::Poller;
+using longlp::Protocol;
 using longlp::Socket;
 
 TEST_CASE("[core/connection]") {
-  NetAddress local_host("127.0.0.1", 20080);
+  NetAddress local_host("127.0.0.1", 20080, Protocol::Ipv4);
   auto server_sock = std::make_unique<Socket>();
   server_sock->Bind(local_host);
   server_sock->Listen();
@@ -47,11 +30,11 @@ TEST_CASE("[core/connection]") {
   REQUIRE(server_conn.GetSocket() != nullptr);
 
   SECTION("connection set events and return events") {
-    server_conn.SetEvents(POLL_ADD | POLL_ET);
-    CHECK((server_conn.GetEvents() & POLL_ADD));
-    CHECK((server_conn.GetEvents() & POLL_ET));
-    server_conn.SetRevents(POLL_READ);
-    CHECK((server_conn.GetRevents() & POLL_READ));
+    server_conn.SetEvents(Poller::Event::kAdd | Poller::Event::kET);
+    CHECK((server_conn.GetEvents() & Poller::Event::kAdd));
+    CHECK((server_conn.GetEvents() & Poller::Event::kET));
+    server_conn.SetRevents(Poller::Event::kRead);
+    CHECK((server_conn.GetRevents() & Poller::Event::kRead));
   }
 
   SECTION("connection's callback setup and invoke") {

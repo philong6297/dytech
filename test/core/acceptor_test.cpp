@@ -1,21 +1,7 @@
-/**
- * @file acceptor_test.cpp
- * @author Yukun J
- * @expectation this
- *
- *
- * implementation file should be compatible to compile in C++
- * program on
- *
+// Copyright 2023 Long Le Phi. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
- * * Linux
- * @init_date Jan 31 2023
- *
- * This is the unit test file for
- *
- *
- * core/Acceptor class
- */
 #include "core/acceptor.h"
 
 #include <unistd.h>
@@ -32,20 +18,16 @@
 #include "core/socket.h"
 #include "core/thread_pool.h"
 
-/* for convenience reason */
 using longlp::Acceptor;
 using longlp::Connection;
 using longlp::Looper;
 using longlp::NetAddress;
-using longlp::POLL_ADD;
-using longlp::POLL_ET;
-using longlp::POLL_READ;
-using longlp::Poller;
+using longlp::Protocol;
 using longlp::Socket;
 using longlp::ThreadPool;
 
 TEST_CASE("[core/acceptor]") {
-  NetAddress local_host("127.0.0.1", 20080);
+  NetAddress local_host("127.0.0.1", 20080, Protocol::Ipv4);
 
   ThreadPool pool;
 
@@ -53,7 +35,7 @@ TEST_CASE("[core/acceptor]") {
   auto single_reactor               = std::make_unique<Looper>();
 
   std::vector<Looper*> raw_reactors = {single_reactor.get()};
-  auto acceptor = Acceptor(single_reactor.get(), raw_reactors, local_host);
+  Acceptor acceptor(single_reactor.get(), raw_reactors, local_host);
 
   REQUIRE(acceptor.GetAcceptorConnection()->GetFd() != -1);
 

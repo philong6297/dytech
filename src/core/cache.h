@@ -25,7 +25,7 @@ namespace longlp {
 class Cache {
  public:
   /* default cache size 10 MB */
-  static constexpr size_t kDefaultCapacity = 10U * 1024U * 1024U;
+  static constexpr size_t kDefaultCapacity = 10'485'760U;
 
   explicit Cache(size_t capacity) noexcept;
   DISALLOW_COPY_AND_MOVE(Cache);
@@ -52,12 +52,6 @@ class Cache {
  private:
   class CacheNode;
 
-  // Evict out the head cache node to save space
-  void EvictOne() noexcept;
-
-  /**
-   * Append a node to the tail of the doubly-linked list
-   */
   void AppendToListTail(const std::shared_ptr<CacheNode>& node) noexcept;
 
   // concurrency

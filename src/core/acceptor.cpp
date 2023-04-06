@@ -4,6 +4,7 @@
 
 #include "core/acceptor.h"
 
+#include <fmt/format.h>
 #include <atomic>
 #include <cstdlib>
 #include <random>
@@ -44,7 +45,8 @@ Acceptor::Acceptor(
   acceptor_sock->Bind(server_address, true);
   acceptor_sock->Listen();
   acceptor_conn = std::make_unique<Connection>(std::move(acceptor_sock));
-  acceptor_conn->SetEvents(POLL_READ);    // not edge-trigger for listener
+  acceptor_conn->SetEvents(Poller::Event::kRead);    // not edge-trigger for
+                                                     // listener
   acceptor_conn->SetLooper(listener);
   listener->AddAcceptor(acceptor_conn.get());
   SetCustomAcceptCallback([](Connection*) {});
@@ -54,7 +56,7 @@ Acceptor::Acceptor(
 Acceptor::~Acceptor() = default;
 
 void Acceptor::BaseAcceptCallback(Connection* server_conn) {
-  NetAddress client_address;
+  NetAddress client_address{};
   int accept_fd = server_conn->GetSocket()->Accept(client_address);
   if (accept_fd == -1) {
     return;
@@ -62,14 +64,17 @@ void Acceptor::BaseAcceptCallback(Connection* server_conn) {
   auto client_sock = std::make_unique<Socket>(accept_fd);
   client_sock->SetNonBlocking();
   auto client_connection = std::make_unique<Connection>(std::move(client_sock));
-  client_connection->SetEvents(POLL_READ | POLL_ET);    // edge-trigger for
-                                                        // client
+  client_connection
+    ->SetEvents(Poller::Event::kRead | Poller::Event::kET);    // edge-trigger
+                                                               // for client
   client_connection->SetCallback(GetCustomHandleCallback());
   // randomized distribution. uniform in long term.
   const auto idx = GenerateRandomNumber(reactors_.size() - 1);
-  Log<LogLevel::INFO>(
-    "new client fd=" + std::to_string(client_connection->GetFd()) +
-    " maps to reactor " + std::to_string(idx));
+  Log<LogLevel::kInfo>(fmt::format(
+    "new client fd={client} maps to reactor={reactor}",
+    fmt::arg("client", client_connection->GetFd()),
+    fmt::arg("reactor", idx)));
+
   client_connection->SetLooper(reactors_[idx]);
   reactors_[idx]->AddConnection(std::move(client_connection));
 }

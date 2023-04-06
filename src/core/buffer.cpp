@@ -57,29 +57,19 @@ auto Buffer::FindAndPopTill(const std::string& target)
   auto pos                       = curr_content.find(target);
   if (pos != std::string::npos) {
     res = curr_content.substr(0, pos + target.size());
-    buf_.erase(buf_.begin(), buf_.begin() + pos + target.size());
+
+    buf_.erase(
+      buf_.begin(),
+      std::next(
+        buf_.begin(),
+        static_cast<decltype(buf_)::difference_type>(pos + target.size())));
   }
   return res;
 }
 
-auto Buffer::Size() const noexcept -> size_t {
-  return buf_.size();
-}
-
-auto Buffer::Capacity() const noexcept -> size_t {
-  return buf_.capacity();
-}
-
-auto Buffer::Data() noexcept -> const uint8_t* {
-  return buf_.data();
-}
-
 auto Buffer::ToStringView() const noexcept -> std::string_view {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   return {reinterpret_cast<const char*>(buf_.data()), buf_.size()};
-}
-
-void Buffer::Clear() noexcept {
-  buf_.clear();
 }
 
 }    // namespace longlp

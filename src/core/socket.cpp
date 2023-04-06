@@ -2,10 +2,14 @@
  * @file socket.cpp
  * @author Yukun J
  * @expectation this
+ *
+ *
  * implementation
 
 
  * * * file should be compatible to compile in C++
+ *
+ *
  *
  * program on Linux
  *
@@ -14,11 +18,15 @@
  * Dec 25 2022
  *
  * This is an
+ *
+ *
  * implementation file implementing
 
  * * the Socket,
  * which acts as either
- *
+
+
+ * * *
  * the listener or client
  */
 #include "core/socket.h"
@@ -73,7 +81,7 @@ void Socket::Connect(NetAddress& server_address) {
   if (
     connect(fd_, server_address.YieldAddr(), *server_address.YieldAddrLen()) ==
     -1) {
-    Log<LogLevel::ERROR>("Socket: Connect() error");
+    Log<LogLevel::kError>("Socket: Connect() error");
     throw std::logic_error("Socket: Connect() error");
   }
 }
@@ -87,7 +95,7 @@ void Socket::Bind(NetAddress& server_address, bool set_reusable) {
   }
   if (bind(fd_, server_address.YieldAddr(), *server_address.YieldAddrLen()) ==
       -1) {
-    Log<LogLevel::ERROR>("Socket: Bind() error");
+    Log<LogLevel::kError>("Socket: Bind() error");
     throw std::logic_error("Socket: Bind() error");
   }
 }
@@ -95,7 +103,7 @@ void Socket::Bind(NetAddress& server_address, bool set_reusable) {
 void Socket::Listen() {
   assert(fd_ != -1 && "cannot Listen() with an invalid fd");
   if (listen(fd_, BACK_LOG) == -1) {
-    Log<LogLevel::ERROR>("Socket: Listen() error");
+    Log<LogLevel::kError>("Socket: Listen() error");
     throw std::logic_error("Socket: Listen() error");
   }
 }
@@ -107,7 +115,7 @@ auto Socket::Accept(NetAddress& client_address) -> int {
   if (client_fd == -1) {
     // under high pressure, accept might fail.
     // but server should not fail at this time
-    Log<LogLevel::WARNING>("Socket: Accept() error");
+    Log<LogLevel::kWarning>("Socket: Accept() error");
   }
   return client_fd;
 }
@@ -117,7 +125,7 @@ void Socket::SetReusable() {
   int yes = 1;
   if (setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1 ||
       setsockopt(fd_, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof yes) == -1) {
-    Log<LogLevel::ERROR>("Socket: SetReusable() error");
+    Log<LogLevel::kError>("Socket: SetReusable() error");
     throw std::logic_error("Socket: SetReusable() error");
   }
 }
@@ -125,7 +133,7 @@ void Socket::SetReusable() {
 void Socket::SetNonBlocking() {
   assert(fd_ != -1 && "cannot SetNonBlocking() with an invalid fd");
   if (fcntl(fd_, F_SETFL, fcntl(fd_, F_GETFL) | O_NONBLOCK) == -1) {
-    Log<LogLevel::ERROR>("Socket: SetNonBlocking() error");
+    Log<LogLevel::kError>("Socket: SetNonBlocking() error");
     throw std::logic_error("Socket: SetNonBlocking() error");
   }
 }
@@ -143,7 +151,7 @@ void Socket::CreateByProtocol(Protocol protocol) {
     fd_ = socket(AF_INET6, SOCK_STREAM, 0);
   }
   if (fd_ == -1) {
-    Log<LogLevel::ERROR>("Socket: socket() error");
+    Log<LogLevel::kError>("Socket: socket() error");
     throw std::logic_error("Socket: socket() error");
   }
 }

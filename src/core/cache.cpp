@@ -24,9 +24,10 @@ class Cache::CacheNode {
   }
 
   void Serialize(std::vector<uint8_t>& destination) {
-    size_t resource_size   = data_.size();
-    size_t buffer_old_size = destination.size();
-    destination.reserve(resource_size + buffer_old_size);
+    if (const auto new_cap = destination.size() + data_.size();
+        destination.capacity() < new_cap) {
+      destination.reserve(new_cap);
+    }
     destination.insert(destination.end(), data_.begin(), data_.end());
   }
 
@@ -68,6 +69,7 @@ Cache::~Cache() = default;
 auto Cache::TryLoad(
   const std::string& resource_url,
   std::vector<uint8_t>& destination) -> bool {
+  // TODO(longlp): Why do we use shared here
   std::shared_lock<std::shared_mutex> lock(mtx_);
   auto iter = mapping_.find(resource_url);
   if (iter != mapping_.end()) {
@@ -84,23 +86,34 @@ auto Cache::TryLoad(
 auto Cache::TryInsert(
   const std::string& resource_url,
   const std::vector<uint8_t>& source) -> bool {
+  // TODO(longlp): Why do we use unique here
   std::unique_lock<std::shared_mutex> lock(mtx_);
-  auto iter = mapping_.find(resource_url);
-  if (iter != mapping_.end()) {
-    // already exists
+
+  // already exists
+  if (mapping_.contains(resource_url)) {
     return false;
   }
-  auto source_size = source.size();
-  if (source_size > capacity_) {
-    // single resource's size exceeds the capacity
+
+  // single resource's size exceeds the capacity
+  if (source.size() > capacity_) {
     return false;
   }
-  while (!mapping_.empty() && (capacity_ - occupancy_) < source_size) {
-    EvictOne();
+
+  // try to eliminate older resources to add new one
+  while (!mapping_.empty() && (capacity_ - occupancy_) < source.size()) {
+    auto* first_node   = head_->next_;
+    auto resource_size = first_node->data_.size();
+    auto iter          = mapping_.find(first_node->identifier_);
+    // it should be in the map
+    assert(iter != mapping_.end());
+    iter->second->Detach();
+    mapping_.erase(iter);
+    occupancy_ -= resource_size;
   }
+
   auto node = std::make_shared<CacheNode>(resource_url, source);
   AppendToListTail(node);
-  occupancy_ += source_size;
+  occupancy_ += source.size();
   mapping_.emplace(resource_url, node);
   return true;
 }
@@ -110,16 +123,6 @@ void Cache::Clear() {
   tail_->prev_ = head_.get();
   mapping_.clear();
   occupancy_ = 0;
-}
-
-void Cache::EvictOne() noexcept {
-  auto* first_node   = head_->next_;
-  auto resource_size = first_node->data_.size();
-  auto iter          = mapping_.find(first_node->identifier_);
-  assert(iter != mapping_.end());
-  iter->second->Detach();
-  mapping_.erase(iter);
-  occupancy_ -= resource_size;
 }
 
 void Cache::AppendToListTail(const std::shared_ptr<CacheNode>& node) noexcept {

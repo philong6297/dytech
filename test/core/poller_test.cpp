@@ -1,21 +1,6 @@
-/**
- * @file poller_test.cpp
- * @author Yukun J
- * @expectation this
- *
- *
- * implementation file should be compatible to compile in C++
- * program on
- *
-
- * * Linux
- * @init_date Jan 30 2023
- *
- * This is the unit test file for
- *
- *
- * core/Poller class
- */
+// Copyright 2023 Long Le Phi. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #include "core/poller.h"
 
@@ -30,17 +15,17 @@
 #include "core/net_address.h"
 #include "core/socket.h"
 
-/* for convenience reason */
 using longlp::Connection;
 using longlp::NetAddress;
-using longlp::POLL_ADD;
-using longlp::POLL_ET;
-using longlp::POLL_READ;
 using longlp::Poller;
+using longlp::Protocol;
 using longlp::Socket;
+using longlp::Poller::Event::kAdd;
+using longlp::Poller::Event::kET;
+using longlp::Poller::Event::kRead;
 
 TEST_CASE("[core/poller]") {
-  NetAddress local_host("127.0.0.1", 20080);
+  NetAddress local_host("127.0.0.1", 20080, Protocol::Ipv4);
   Socket server_sock;
 
   // build the server socket
@@ -74,7 +59,7 @@ TEST_CASE("[core/poller]") {
       CHECK(client_sock->GetFd() != -1);
       client_conns
         .push_back(std::make_shared<Connection>(std::move(client_sock)));
-      client_conns[i]->SetEvents(POLL_READ);
+      client_conns[i]->SetEvents(Poller::Event::kRead);
     }
 
     // each client connection under poller's monitor

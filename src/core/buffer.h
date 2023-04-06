@@ -21,7 +21,6 @@ namespace longlp {
 // NOT thread-safe
 class Buffer {
  public:
-  // default initial underlying capacity of Buffer
   static constexpr size_t kDefaultCapacity = 1024;
 
   explicit Buffer(size_t initial_capacity = kDefaultCapacity);
@@ -45,15 +44,17 @@ class Buffer {
   [[nodiscard]] auto
   FindAndPopTill(const std::string& target) -> std::optional<std::string>;
 
-  [[nodiscard]] auto Size() const noexcept -> size_t;
+  [[nodiscard]] auto Size() const noexcept -> size_t { return buf_.size(); }
 
-  [[nodiscard]] auto Capacity() const noexcept -> size_t;
+  [[nodiscard]] auto Capacity() const noexcept -> size_t {
+    return buf_.capacity();
+  }
 
-  [[nodiscard]] auto Data() noexcept -> const uint8_t*;
+  [[nodiscard]] auto Data() noexcept -> const uint8_t* { return buf_.data(); }
+
+  void Clear() noexcept { buf_.clear(); }
 
   [[nodiscard]] auto ToStringView() const noexcept -> std::string_view;
-
-  void Clear() noexcept;
 
  private:
   std::vector<uint8_t> buf_;

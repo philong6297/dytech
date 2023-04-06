@@ -36,7 +36,7 @@ struct Logger::Log {
   // time order, best effort approach
   Log(LogLevel log_level, const std::string_view log_msg) noexcept {
     static constexpr std::array<std::string_view, 4> log_level_names =
-      {"INFO: ", "WARNING: ", "ERROR: ", "FATAL: "};
+      {"kInfo: ", "kWarning: ", "kError: ", "kFatal: "};
 
     auto current_time = std::time(nullptr);
     std::ostringstream stream;

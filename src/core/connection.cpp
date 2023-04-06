@@ -4,7 +4,9 @@
 
 #include "core/connection.h"
 
+#include <fmt/format.h>
 #include <sys/socket.h>
+#include <array>
 #include <cstring>
 
 #include "core/buffer.h"
@@ -76,48 +78,55 @@ auto Connection::ReadAsString() const noexcept -> std::string {
 
 auto Connection::Recv() -> std::pair<ssize_t, bool> {
   // read all available bytes, since Edge-trigger
-  int from_fd  = GetFd();
   ssize_t read = 0;
-  uint8_t buf[kBufferSize + 1];
-  memset(buf, 0, sizeof(buf));
+  std::array<uint8_t, kBufferSize + 1> buf{};
+  buf.fill(0);
+
   while (true) {
-    ssize_t curr_read = recv(from_fd, buf, kBufferSize, 0);
+    ssize_t curr_read = recv(GetFd(), buf.data(), kBufferSize, 0);
     if (curr_read > 0) {
       read += curr_read;
-      WriteToReadBuffer(buf, curr_read);
-      memset(buf, 0, sizeof(buf));
-    }
-    else if (curr_read == 0) {
-      // the client has exit
-      return {read, true};
-    }
-    else if (curr_read == -1 && errno == EINTR) {
-      // normal interrupt
+      WriteToReadBuffer(buf.data(), static_cast<size_t>(curr_read));
+      buf.fill(0);
       continue;
     }
-    else if (curr_read == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-      // all data read
-      break;
-    }
-    else {
-      Log<LogLevel::ERROR>("HandleConnection: recv() error");
+
+    // the client has exit
+    if (curr_read == 0) {
       return {read, true};
     }
+
+    // curr_read = -1
+
+    // normal interrupt
+    if (errno == EINTR) {
+      continue;
+    }
+
+    // all data read
+    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+      break;
+    }
+
+    Log<LogLevel::kError>(
+      fmt::format("HandleConnection: recv() error code {}", errno));
+    return {read, true};
   }
   return {read, false};
 }
 
 void Connection::Send() {
-  // robust write
-  ssize_t curr_write = 0;
-  ssize_t write;
-  const ssize_t to_write = GetWriteBufferSize();
-  const uint8_t* buf     = write_buffer_->Data();
-  while (curr_write < to_write) {
-    write = send(GetFd(), buf + curr_write, to_write - curr_write, 0);
+  const auto to_write = static_cast<ssize_t>(GetWriteBufferSize());
+  const uint8_t* buf  = write_buffer_->Data();
+  for (ssize_t curr_write = 0; curr_write < to_write;) {
+    auto write = send(
+      GetFd(),
+      buf + curr_write,
+      static_cast<size_t>(to_write - curr_write),
+      0);
     if (write <= 0) {
       if (errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK) {
-        Log<LogLevel::ERROR>("Error in Connection::Send()");
+        Log<LogLevel::kError>("Error in Connection::Send()");
         ClearWriteBuffer();
         return;
       }

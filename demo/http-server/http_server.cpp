@@ -5,7 +5,8 @@
  *
 
  *
- * *
+
+ * * *
 
 
 
@@ -23,7 +24,8 @@
 
 
  * * * http
- * server for
+ * server
+ * for
 
 
  * * *
@@ -38,7 +40,8 @@
  * *
 
  * *
- *
+
+ * *
  *
  * @init_date
 
@@ -67,13 +70,14 @@ void ProcessHttpRequest(
   const std::string& serving_directory,
   std::shared_ptr<Cache>& cache,
   Connection* client_conn) {
-  Log<LogLevel::INFO>("detect request");
+  Log<LogLevel::kInfo>("detect request");
   // edge-trigger, first read all available bytes
   int from_fd       = client_conn->GetFd();
   auto [read, exit] = client_conn->Recv();
   if (exit) {
     client_conn->GetLooper()->DeleteConnection(from_fd);
-    Log<LogLevel::INFO>("client fd=" + std::to_string(from_fd) + " has exited");
+    Log<LogLevel::kInfo>(
+      "client fd=" + std::to_string(from_fd) + " has exited");
     // client_conn ptr is invalid below here, do not touch it again
     return;
   }
@@ -92,7 +96,7 @@ void ProcessHttpRequest(
     else {
       std::string resource_full_path =
         serving_directory + request.GetResourceUrl();
-      Log<LogLevel::INFO>(resource_full_path);
+      Log<LogLevel::kInfo>(resource_full_path);
       if (IsCgiRequest(resource_full_path)) {
         // dynamic CGI request
         Cgier cgier = Cgier::ParseCgier(resource_full_path);
@@ -125,7 +129,7 @@ void ProcessHttpRequest(
       else {
         // static resource request
         if (!IsFileExists(resource_full_path)) {
-          Log<LogLevel::INFO>(resource_full_path + " not exist");
+          Log<LogLevel::kInfo>(resource_full_path + " not exist");
           auto response = Response::Make404Response();
           no_more_parse = true;
           response.Serialize(response_buf);

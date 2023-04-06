@@ -1,21 +1,6 @@
-/**
- * @file looper_test.cpp
- * @author Yukun J
- * @expectation this
- *
- *
- * implementation file should be compatible to compile in C++
- * program on
- *
-
- * * Linux
- * @init_date Jan 30 2023
- *
- * This is the unit test file for
- *
- *
- * core/Looper class
- */
+// Copyright 2023 Long Le Phi. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #include "core/looper.h"
 
@@ -37,16 +22,17 @@
 using longlp::Connection;
 using longlp::Looper;
 using longlp::NetAddress;
-using longlp::POLL_ADD;
-using longlp::POLL_ET;
-using longlp::POLL_READ;
 using longlp::Poller;
+using longlp::Protocol;
 using longlp::Socket;
+using longlp::Poller::Event::kAdd;
+using longlp::Poller::Event::kET;
+using longlp::Poller::Event::kRead;
 
 TEST_CASE("[core/looper]") {
   Looper looper;
   // build the server socket
-  NetAddress local_host("127.0.0.1", 20080);
+  NetAddress local_host("127.0.0.1", 20080, Protocol::Ipv4);
   Socket server_sock;
   server_sock.Bind(local_host);
   server_sock.Listen();
@@ -73,7 +59,7 @@ TEST_CASE("[core/looper]") {
       CHECK(client_sock->GetFd() != -1);
       client_sock->SetNonBlocking();
       auto client_conn = std::make_unique<Connection>(std::move(client_sock));
-      client_conn->SetEvents(POLL_READ);
+      client_conn->SetEvents(Poller::Event::kRead);
       client_conn->SetCallback([&reach = reach, index = i](Connection* conn) {
         reach[index] = 1;
       });

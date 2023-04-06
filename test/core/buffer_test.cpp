@@ -1,33 +1,12 @@
-/**
- * @file buffer_test.cpp
- * @author Yukun J
- * @expectation this
- *
- *
- *
- *
- * implementation file should be compatible to compile in C++
- * program on
-
- * *
-
-
- * * * Linux
- * @init_date Jan 28 2023
- *
- * This is the unit test file
- * for
- *
-
- * *
- * core/Buffer class
- */
+// Copyright 2023 Long Le Phi. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #include "core/buffer.h"
 
-#include <cstring>
-
 #include <catch2/catch_test_macros.hpp>
+#include <string_view>
+#include <vector>
 
 /* for convenience reason */
 using longlp::Buffer;
@@ -38,12 +17,22 @@ TEST_CASE("[core/buffer]") {
   REQUIRE(buf.Capacity() == Buffer::kDefaultCapacity);
 
   SECTION("appending c-str into buffer from both side") {
-    const char msg1[1024] = "Greeting from beginning!";
-    const char msg2[2014] = "Farewell from end~";
-    buf.AppendHead(msg1);
-    buf.Append(msg2);
-    snprintf((char*)msg1 + strlen(msg1), strlen(msg2) + 1, "%s", msg2);
-    CHECK(std::strncmp((char*)buf.Data(), msg1, std::strlen(msg1)) == 0);
+    constexpr std::string_view msg1 = "Greeting from beginning!";
+    constexpr std::string_view msg2 = "Farewell from end~";
+
+    std::vector<uint8_t> buff_1;
+    for (auto c : msg1) {
+      buff_1.emplace_back(c);
+    }
+
+    std::vector<uint8_t> buff_2;
+    for (auto c : msg2) {
+      buff_2.emplace_back(c);
+    }
+
+    buf.AppendUnsafe(buff_1.data(), buff_1.size());
+    buf.AppendHeadUnsafe(buff_2.data(), buff_2.size());
+    CHECK(buf.ToStringView() == msg1);
     buf.Clear();
     CHECK(buf.Size() == 0);
   }

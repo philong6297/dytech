@@ -28,7 +28,7 @@ set(LONGLP_PROJECT_BENCHMARK_DIR "${LONGLP_PROJECT_DIR}/benchmark")
 # ---- Related tools ----
 add_subdirectory(cmake)
 longlp_desired_compile_options(LONGLP_DESIRED_COMPILE_OPTIONS)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # ---- Third parties ----
 find_package(fmt CONFIG REQUIRED)

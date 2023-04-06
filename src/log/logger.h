@@ -23,10 +23,10 @@
 namespace longlp {
 
 enum class LogLevel : size_t {
-  INFO    = 0,
-  WARNING = 1,
-  ERROR   = 2,
-  FATAL   = 3,
+  kInfo    = 0,
+  kWarning = 1,
+  kError   = 2,
+  kFatal   = 3,
 };
 
 // A simple asynchronous logger

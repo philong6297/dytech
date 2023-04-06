@@ -1,37 +1,6 @@
-/**
- * @file looper.h
- * @author Yukun J
- * @expectation this header file
- *
-
- *
- * *
-
- * * should
- * be compatible to compile in C++
- * program on Linux
- *
- *
-
- * * @init_date
-
-
- * * * Jan 04
- * 2022
- *
- * This is a header file
- * implementing
-
- * * the Looper that
-
- * *
- * servers as the
- * main
- * control
- * looping for the
-
- * * server
- */
+// Copyright 2023 Long Le Phi. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #ifndef CORE_LOOPER_H_
 #define CORE_LOOPER_H_
@@ -47,35 +16,18 @@
 
 namespace longlp {
 
-/* the epoll_wait time in milliseconds */
-static constexpr int TIMEOUT = 3000;
-
 class Poller;
-
 class ThreadPool;
-
 class Connection;
-
 class Acceptor;
 
-/**
- * This Looper acts as the executor on a single thread
- * adopt the
- *
-
-
-
-
-
- * * * * * * philosophy of 'one looper per thread'
- * */
+// This Looper acts as the executor on a single thread adopt the philosophy of
+// 'one looper per thread'
 class Looper {
  public:
   Looper();
-
   ~Looper();
-
-  DISALLOW_COPY(Looper);
+  DISALLOW_COPY_AND_MOVE(Looper);
 
   void Loop();
 
@@ -85,7 +37,7 @@ class Looper {
 
   [[nodiscard]] auto DeleteConnection(int fd) -> bool;
 
-  void SetExit() noexcept;
+  void SetExit() noexcept { exit_ = true; }
 
  private:
   std::unique_ptr<Poller> poller_;

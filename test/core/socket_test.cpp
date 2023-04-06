@@ -1,21 +1,7 @@
-/**
- * @file socket_test.cpp
- * @author Yukun J
- * @expectation this
- *
- *
- * implementation file should be compatible to compile in C++
- * program on
- *
+// Copyright 2023 Long Le Phi. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
- * * Linux
- * @init_date Jan 29 2023
- *
- * This is the unit test file for
- *
- *
- * core/Socket class
- */
 #include "core/socket.h"
 
 #include <fcntl.h>
@@ -25,12 +11,12 @@
 #include <catch2/catch_test_macros.hpp>
 #include "core/net_address.h"
 
-/* for convenience reason */
 using longlp::NetAddress;
+using longlp::Protocol;
 using longlp::Socket;
 
 TEST_CASE("[core/socket]") {
-  NetAddress local_host("127.0.0.1", 20080);
+  NetAddress local_host("127.0.0.1", 20080, Protocol::Ipv4);
   Socket server_sock;
 
   // build the server socket

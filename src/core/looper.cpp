@@ -1,23 +1,6 @@
-/**
- * @file looper.cpp
- * @author Yukun J
- * @expectation this implementation
-
-
- * * * file should be compatible to compile in C++
- * program on Linux
- *
- *
- * @init_date
- * Dec 26 2022
- *
- * This is an implementation file implementing
-
- * * the Looper that
- * servers as the
- * main control looping for the server
-
- */
+// Copyright 2023 Long Le Phi. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #include "core/looper.h"
 
@@ -28,14 +11,19 @@
 
 namespace longlp {
 
+namespace {
+/* the epoll_wait time in milliseconds */
+constexpr int kTimeoutMs = 3000;
+}    // namespace
+
 Looper::Looper() :
-  poller_(std::make_unique<Poller>()) {}
+  poller_(std::make_unique<Poller>(Poller::kDefaultListenedEvents)) {}
 
 Looper::~Looper() = default;
 
 void Looper::Loop() {
   while (!exit_) {
-    auto ready_connections = poller_->Poll(TIMEOUT);
+    auto ready_connections = poller_->Poll(kTimeoutMs);
     for (auto& conn : ready_connections) {
       conn->GetCallback()();
     }
@@ -62,10 +50,6 @@ auto Looper::DeleteConnection(int fd) -> bool {
   }
   connections_.erase(it);
   return true;
-}
-
-void Looper::SetExit() noexcept {
-  exit_ = true;
 }
 
 }    // namespace longlp
