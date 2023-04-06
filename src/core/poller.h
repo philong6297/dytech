@@ -3,25 +3,33 @@
  * @author Yukun J
  * @expectation this file should be
 
- *
+
+
+ * * *
  * *
 
  * * compatible to compile in C++
  * program on Linux
- * @init_date Dec
+ *
+ * @init_date
+ * Dec
  *
  * 25
  * 2022
 
 
  * * *
- * This is a header file implementing the Poller
+ * This is a header file
+ * implementing the
+ * Poller
  *
  *
  * which
  * actively does
 
- * * epolling on a collection of socket descriptors
+ * * epolling on
+ * a collection of
+ * socket descriptors
 
  * * to be
  *
@@ -39,42 +47,44 @@
 
 namespace longlp {
 
-  /* the default maximum number of events to be listed on epoll tree */
-  static constexpr int DEFAULT_EVENTS_LISTENED = 1024;
+/* the default maximum number of events to be listed on epoll tree */
+static constexpr int DEFAULT_EVENTS_LISTENED = 1024;
 
-  static constexpr unsigned POLL_ADD           = EPOLL_CTL_ADD;
-  static constexpr unsigned POLL_READ          = EPOLLIN;
-  static constexpr unsigned POLL_ET            = EPOLLET;
+static constexpr unsigned POLL_ADD           = EPOLL_CTL_ADD;
+static constexpr unsigned POLL_READ          = EPOLLIN;
+static constexpr unsigned POLL_ET            = EPOLLET;
 
-  class Connection;
+class Connection;
 
-  /**
+/**
  * This Poller acts at the socket monitor that actively polling on
    *
 
 
 
-   * * * * connections
+
+
+ * * * * * * connections
  * */
-  class Poller {
-   public:
-    explicit Poller(uint64_t poll_size = DEFAULT_EVENTS_LISTENED);
+class Poller {
+ public:
+  explicit Poller(uint64_t poll_size = DEFAULT_EVENTS_LISTENED);
 
-    ~Poller();
+  ~Poller();
 
-    NON_COPYABLE(Poller);
+  DISALLOW_COPY(Poller);
 
-    void AddConnection(Connection* conn);
+  void AddConnection(Connection* conn);
 
-    // timeout in milliseconds
-    auto Poll(int timeout = -1) -> std::vector<Connection*>;
+  // timeout in milliseconds
+  [[nodiscard]] auto Poll(int timeout = -1) -> std::vector<Connection*>;
 
-    auto GetPollSize() const noexcept -> uint64_t;
+  [[nodiscard]] auto GetPollSize() const noexcept -> uint64_t;
 
-   private:
-    int poll_fd_;
-    uint64_t poll_size_;
-    struct epoll_event* poll_events_{nullptr};
-  };
+ private:
+  int poll_fd_;
+  uint64_t poll_size_;
+  struct epoll_event* poll_events_{nullptr};
+};
 }    // namespace longlp
 #endif    // CORE_POLLER_H_

@@ -117,7 +117,7 @@ Language: Cpp
 MacroBlockBegin: "^.*_BEGIN$"
 MacroBlockEnd: "^.*_END$"
 MaxEmptyLinesToKeep: 1
-NamespaceIndentation: All
+NamespaceIndentation: None
 NamespaceMacros: []
 # ObjCBinPackProtocolList: obj-c
 # ObjCBlockIndentWidth: obj-c

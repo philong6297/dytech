@@ -1,18 +1,25 @@
 /**
  * @file net_address.h
  * @author Yukun J
- * @expectation this header file
+ * @expectation this header
+ * file
 
- * * should be compatible to compile in C++
+
+ * * * should be compatible to compile in C++
  * program on Linux
+ *
  * @init_date
- * Dec
+
+ * * Dec
  * 25 2022
  *
- * This is a header file implementing the Internet Address,
+ * This is a header file implementing the
+ * Internet
+ * Address,
  * which
  * is composed
  * of an IP address and a port
+
  */
 
 #ifndef CORE_NET_ADDRESS_H_
@@ -26,53 +33,55 @@
 
 namespace longlp {
 
-  /* Network protocol supported */
-  enum class Protocol {
-    Ipv4,
-    Ipv6
-  };
+/* Network protocol supported */
+enum class Protocol {
+  Ipv4,
+  Ipv6
+};
 
-  /**
+/**
  * This NetAddress class encapsulates the unique identifier of a network
 
-   * * host
+
+
+ * * * * host
  * in the form of "IP Address + Port"
- * This class is compatible
-   * with
+ * This class is
+ * compatible
+
+ * * with
    * both IPv4 and IPv6
  * */
-  class NetAddress {
-   public:
-    NetAddress() noexcept;
+class NetAddress {
+ public:
+  NetAddress() noexcept;
 
-    NetAddress(
-      const char* ip,
-      uint16_t port,
-      Protocol protocol = Protocol::Ipv4);
+  NetAddress(const char* ip, uint16_t port, Protocol protocol = Protocol::Ipv4);
 
-    ~NetAddress() = default;
+  ~NetAddress();
 
-    auto GetProtocol() const noexcept -> Protocol;
+  [[nodiscard]] auto GetProtocol() const noexcept -> Protocol;
 
-    auto YieldAddr() -> struct sockaddr*;
+  [[nodiscard]] auto YieldAddr() -> struct sockaddr*;
 
-    auto YieldAddrLen() -> socklen_t*;
+  [[nodiscard]] auto YieldAddrLen() -> socklen_t*;
 
-    auto GetIp() const noexcept -> std::string;
+  [[nodiscard]] auto GetIp() const noexcept -> std::string;
 
-    auto GetPort() const noexcept -> uint16_t;
+  [[nodiscard]] auto GetPort() const noexcept -> uint16_t;
 
-    auto ToString() const noexcept -> std::string;
+  [[nodiscard]] auto ToString() const noexcept -> std::string;
 
-   private:
-    Protocol protocol_{Protocol::Ipv4};
+ private:
+  Protocol protocol_{Protocol::Ipv4};
 
-    mutable struct sockaddr_storage addr_ {};
+  mutable struct sockaddr_storage addr_ {};
 
-    socklen_t addr_len_;
-  };
+  socklen_t addr_len_;
+};
 
-  auto operator<<(std::ostream& os, const NetAddress& address) -> std::ostream&;
+[[nodiscard]] auto
+operator<<(std::ostream& os, const NetAddress& address) -> std::ostream&;
 
 }    // namespace longlp
 #endif    // CORE_NET_ADDRESS_H_

@@ -1,103 +1,96 @@
-/**
- * @file connection.h
- * @author Yukun J
- * @expectation this file should
- * be
- * compatible to compile in C++
- * program on Linux
- * @init_date Dec 25
- * 2022
-
- * *
- * This is a header file implementing the TCP connection, which
- * supports
- *
- * callback functionality
- */
+// Copyright 2023 Long Le Phi. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #ifndef CORE_CONNECTION_H_
 #define CORE_CONNECTION_H_
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "core/buffer.h"
-#include "core/socket.h"
 #include "core/utils.h"
 
 namespace longlp {
 
-  static constexpr int TEMP_BUF_SIZE = 2048;
+class Looper;
+class Buffer;
+class Socket;
 
-  class Looper;
+// This Connection class encapsulates a TCP client connection
+// It could be set a custom callback function when new messages arrive and it
+// contains information about the monitoring events and return events so that
+// Poller could manipulate and epoll based on this Connection class
+class Connection {
+ public:
+  explicit Connection(std::unique_ptr<Socket> socket);
+  ~Connection();
 
-  /**
- * This Connection class encapsulates a TCP client connection
- * It could
+  DISALLOW_COPY(Connection);
+  DEFAULT_MOVE(Connection);
 
-   * * be set a custom callback function when new messages arrive
- * and it
-   *
-   * contains information about the monitoring events and return events
- * so
+  [[nodiscard]] auto GetFd() const noexcept -> int;
 
-   * * that Poller could manipulate and epoll based on this Connection class
- *
-   */
-  class Connection {
-   public:
-    explicit Connection(std::unique_ptr<Socket> socket);
-    ~Connection() = default;
+  [[nodiscard]] auto GetSocket() noexcept -> Socket*;
 
-    NON_COPYABLE(Connection);
+  // for Poller
 
-    auto GetFd() const noexcept -> int;
-    auto GetSocket() noexcept -> Socket*;
+  void SetEvents(uint32_t events) { events_ = events; }
 
-    /* for Poller */
-    void SetEvents(uint32_t events);
-    auto GetEvents() const noexcept -> uint32_t;
-    void SetRevents(uint32_t revents);
-    auto GetRevents() const noexcept -> uint32_t;
+  [[nodiscard]] auto GetEvents() const noexcept -> uint32_t { return events_; }
 
-    void SetCallback(const std::function<void(Connection*)>& callback);
-    auto GetCallback() noexcept -> std::function<void()>;
+  void SetRevents(uint32_t revents) { revents_ = revents; }
 
-    /* for Buffer */
-    auto
-    FindAndPopTill(const std::string& target) -> std::optional<std::string>;
-    auto GetReadBufferSize() const noexcept -> size_t;
-    auto GetWriteBufferSize() const noexcept -> size_t;
-    void WriteToReadBuffer(const unsigned char* buf, size_t size);
-    void WriteToWriteBuffer(const unsigned char* buf, size_t size);
-    void WriteToReadBuffer(const std::string& str);
-    void WriteToWriteBuffer(const std::string& str);
-    void WriteToWriteBuffer(std::vector<unsigned char>&& other_buf);
+  [[nodiscard]] auto GetRevents() const noexcept -> uint32_t {
+    return revents_;
+  }
 
-    auto Read() const noexcept -> const unsigned char*;
-    auto ReadAsString() const noexcept -> std::string;
+  void SetCallback(const std::function<void(Connection*)>& callback) {
+    callback_ = [callback, this] {
+      return callback(this);
+    };
+  }
 
-    /* return std::pair<How many bytes read, whether the client exits> */
-    auto Recv() -> std::pair<ssize_t, bool>;
-    void Send();
-    void ClearReadBuffer() noexcept;
-    void ClearWriteBuffer() noexcept;
+  [[nodiscard]] auto GetCallback() noexcept -> std::function<void()> {
+    return callback_;
+  }
 
-    void SetLooper(Looper* looper) noexcept;
-    auto GetLooper() noexcept -> Looper*;
+  // for Buffer
+  [[nodiscard]] auto
+  FindAndPopTill(const std::string& target) -> std::optional<std::string>;
+  [[nodiscard]] auto GetReadBufferSize() const noexcept -> size_t;
+  [[nodiscard]] auto GetWriteBufferSize() const noexcept -> size_t;
+  void WriteToReadBuffer(const uint8_t* buf, size_t size);
+  void WriteToWriteBuffer(const uint8_t* buf, size_t size);
+  void WriteToReadBuffer(const std::string& str);
+  void WriteToWriteBuffer(const std::string& str);
+  void WriteToWriteBuffer(std::vector<uint8_t>&& other_buf);
 
-   private:
-    Looper* owner_looper_{nullptr};
-    std::unique_ptr<Socket> socket_;
-    std::unique_ptr<Buffer> read_buffer_;
-    std::unique_ptr<Buffer> write_buffer_;
-    uint32_t events_{0};
-    uint32_t revents_{0};
-    std::function<void()> callback_{nullptr};
-  };
+  [[nodiscard]] auto Read() const noexcept -> const uint8_t*;
+  [[nodiscard]] auto ReadAsString() const noexcept -> std::string;
+
+  // return std::pair<How many bytes read, whether the client exists>
+  [[nodiscard]] auto Recv() -> std::pair<ssize_t, bool>;
+  void Send();
+  void ClearReadBuffer() noexcept;
+  void ClearWriteBuffer() noexcept;
+
+  void SetLooper(Looper* looper) noexcept { owner_looper_ = looper; }
+
+  [[nodiscard]] auto GetLooper() noexcept -> Looper* { return owner_looper_; }
+
+ private:
+  Looper* owner_looper_{nullptr};
+  std::unique_ptr<Socket> socket_;
+  std::unique_ptr<Buffer> read_buffer_;
+  std::unique_ptr<Buffer> write_buffer_;
+  uint32_t events_{0};
+  uint32_t revents_{0};
+  std::function<void()> callback_{nullptr};
+};
 
 }    // namespace longlp
 #endif    // CORE_CONNECTION_H_

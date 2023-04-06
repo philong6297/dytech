@@ -3,15 +3,24 @@
  * @author Yukun J
  * @expectation this header file
  *
- * should
+
+ * *
+
+ * * should
  * be compatible to compile in C++
  * program on Linux
+ *
+ *
  * @init_date
 
- * * Dec 25
+
+ * * * Dec 25
  * 2022
  *
- * This is a header file implementing the Socket, which
+ * This is a header file implementing
+
+ * * the Socket,
+ * which
 
  * * acts as
  * either the
@@ -25,57 +34,63 @@
 
 namespace longlp {
 
-  class NetAddress;
+class NetAddress;
 
-  enum class Protocol;
+enum class Protocol;
 
-  /**
+/**
  * This Socket class encapsulates a socket descriptor
  * which can act
-   * as
+ *
+
+
+ * * * as
 
    * * either listener or client
- * This class is compatible with both
-   * IPv4 and
+ * This class is compatible with
+ *
+ * both
+
+ * * IPv4 and
 
    * * IPv6
  * */
-  class Socket {
-   public:
-    Socket() noexcept = default;
+class Socket {
+ public:
+  Socket() noexcept;
 
-    explicit Socket(int fd) noexcept;
+  explicit Socket(int fd) noexcept;
 
-    NON_COPYABLE(Socket);
+  DISALLOW_COPY(Socket);
 
-    Socket(Socket&& other) noexcept;
+  Socket(Socket&& other) noexcept;
 
-    auto operator=(Socket&& other) noexcept -> Socket&;
+  [[nodiscard]] auto operator=(Socket&& other) noexcept -> Socket&;
 
-    ~Socket();
+  ~Socket();
 
-    auto GetFd() const noexcept -> int;
+  [[nodiscard]] auto GetFd() const noexcept -> int;
 
-    /* for client, one step: directly connect */
-    void Connect(NetAddress& server_address);
+  /* for client, one step: directly connect */
+  void Connect(NetAddress& server_address);
 
-    /* for server, three steps: bind + listen + accept */
-    void Bind(NetAddress& server_address, bool set_reusable = true);
+  /* for server, three steps: bind + listen + accept */
+  void Bind(NetAddress& server_address, bool set_reusable = true);
 
-    void Listen();
+  void Listen();
 
-    auto Accept(NetAddress& client_address) -> int;
+  [[nodiscard]] auto Accept(NetAddress& client_address) -> int;
 
-    void SetReusable();
+  void SetReusable();
 
-    void SetNonBlocking();
+  void SetNonBlocking();
 
-    auto GetAttrs() -> int;
+  [[nodiscard]] auto GetAttrs() -> int;
 
-   private:
-    void CreateByProtocol(Protocol protocol);
+ private:
+  void CreateByProtocol(Protocol protocol);
 
-    int fd_{-1};
-  };
+  int fd_{-1};
+};
 }    // namespace longlp
 #endif    // CORE_SOCKET_H_

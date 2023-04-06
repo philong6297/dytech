@@ -1,18 +1,6 @@
-/**
- * @file cache_test.cpp
- * @author Yukun J
- * @expectation this
- *
- * implementation file should be compatible to compile in C++
- * program on
- *
- * Linux
- * @init_date Jan 31 2023
- *
- * This is the unit test file for
- *
- * core/Cache class
- */
+// Copyright 2023 Long Le Phi. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #include "core/cache.h"
 
@@ -26,8 +14,9 @@ using longlp::Cache;
 TEST_CASE("[core/cache]") {
   const int capacity = 20;
   Cache cache(capacity);
-  std::vector<unsigned char> data = {'h', 'e', 'l', 'l', 'o', '!'};
-  const auto data_size            = data.size();
+  // "hello!"
+  std::vector<uint8_t> data = {104, 101, 108, 108, 111, 33};
+  const auto data_size      = data.size();
 
   REQUIRE(cache.GetOccupancy() == 0);
   REQUIRE(cache.GetCapacity() == capacity);
@@ -41,7 +30,7 @@ TEST_CASE("[core/cache]") {
       CHECK(cache.GetOccupancy() == i * data_size);
     }
 
-    std::vector<unsigned char> read_buf;
+    std::vector<uint8_t> read_buf;
     // all url1, url2, url3 should be available
     for (int i = 1; i <= capacity / data_size; i++) {
       auto load_success = cache.TryLoad("url" + std::to_string(i), read_buf);

@@ -12,7 +12,7 @@ target_sources(
           core/poller.h
           core/socket.h
           core/thread_pool.h
-          core/turtle_server.h
+          core/server.h
           core/utils.h
           core/buffer.cpp
           core/cache.cpp
@@ -22,10 +22,10 @@ target_sources(
           core/poller.cpp
           core/socket.cpp
           core/thread_pool.cpp
+          core/server.cpp
 )
 target_link_libraries(core PUBLIC log Threads::Threads)
-target_compile_options(core PUBLIC ${LONGLP_DESIRED_COMPILE_OPTIONS})
-target_compile_features(core PUBLIC ${LONGLP_DESIRED_COMPILE_FEATURES})
+target_compile_options(core PUBLIC ${LONGLP_DESIRED_COMPILE_OPTIONS} -Wno-unsafe-buffer-usage)
 target_include_directories(core PUBLIC ${LONGLP_PROJECT_SRC_DIR})
 
 # Build the turtle http library
@@ -45,13 +45,11 @@ target_sources(
 )
 target_link_libraries(http PUBLIC log)
 target_compile_options(http PUBLIC ${LONGLP_DESIRED_COMPILE_OPTIONS})
-target_compile_features(http PUBLIC ${LONGLP_DESIRED_COMPILE_FEATURES})
 target_include_directories(http PUBLIC ${LONGLP_PROJECT_SRC_DIR})
 
 # Build the turtle logging library
-add_library(log ${log_SOURCES})
+add_library(log STATIC)
 target_sources(log PRIVATE log/logger.cpp log/logger.h)
-target_link_libraries(log PUBLIC Threads::Threads)
+target_link_libraries(log PUBLIC Threads::Threads fmt::fmt)
 target_compile_options(log PUBLIC ${LONGLP_DESIRED_COMPILE_OPTIONS})
-target_compile_features(log PUBLIC ${LONGLP_DESIRED_COMPILE_FEATURES})
 target_include_directories(log PUBLIC ${LONGLP_PROJECT_SRC_DIR})
