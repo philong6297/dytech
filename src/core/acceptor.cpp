@@ -1,15 +1,16 @@
-// Copyright 2023 Long Le Phi. All rights reserved.
+// Copyright 2023 Phi-Long Le. All rights reserved.
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
 #include "core/acceptor.h"
 
-#include <fmt/format.h>
 #include <atomic>
 #include <cstdlib>
 #include <random>
 #include <thread>
 #include <utility>
+
+#include <fmt/format.h>
 
 #include "core/connection.h"
 #include "core/looper.h"
@@ -37,20 +38,21 @@ auto GenerateRandomNumber(size_t upper_bound) -> size_t {
 }    // namespace
 
 Acceptor::Acceptor(
-  Looper* listener,
-  std::vector<Looper*> reactors,
+  not_null<Looper*> listener,
+  std::vector<not_null<Looper*>> reactors,
   NetAddress server_address) :
   reactors_(std::move(reactors)) {
   auto acceptor_sock = std::make_unique<Socket>();
   acceptor_sock->Bind(server_address, true);
   acceptor_sock->Listen();
-  acceptor_conn = std::make_unique<Connection>(std::move(acceptor_sock));
-  acceptor_conn->SetEvents(Poller::Event::kRead);    // not edge-trigger for
-                                                     // listener
-  acceptor_conn->SetLooper(listener);
-  listener->AddAcceptor(acceptor_conn.get());
-  SetCustomAcceptCallback([](Connection*) {});
-  SetCustomHandleCallback([](Connection*) {});
+
+  acceptor_conn_ = std::make_unique<Connection>(std::move(acceptor_sock));
+  acceptor_conn_->SetEvents(Poller::Event::kRead);    // not edge-trigger for
+                                                      // listener
+  acceptor_conn_->SetLooper(listener);
+  listener->AddAcceptor(acceptor_conn_.get());
+  SetAcceptCallback([](Connection*) {});
+  SetHandleCallback([](Connection*) {});
 }
 
 Acceptor::~Acceptor() = default;
@@ -79,32 +81,28 @@ void Acceptor::BaseAcceptCallback(Connection* server_conn) {
   reactors_[idx]->AddConnection(std::move(client_connection));
 }
 
-void Acceptor::SetCustomAcceptCallback(
-  std::function<void(Connection*)> custom_accept_callback) {
+void Acceptor::SetAcceptCallback(ConnectionCallback custom_accept_callback) {
   custom_accept_callback_ = std::move(custom_accept_callback);
-  acceptor_conn->SetCallback([this](auto&& PH1) {
-    BaseAcceptCallback(std::forward<decltype(PH1)>(PH1));
-    custom_accept_callback_(std::forward<decltype(PH1)>(PH1));
+  acceptor_conn_->SetCallback([this](not_null<Connection*> connection) {
+    BaseAcceptCallback(connection);
+    custom_accept_callback_(connection);
   });
 }
 
-void Acceptor::SetCustomHandleCallback(
-  std::function<void(Connection*)> custom_handle_callback) {
+void Acceptor::SetHandleCallback(ConnectionCallback custom_handle_callback) {
   custom_handle_callback_ = std::move(custom_handle_callback);
 }
 
-auto Acceptor::GetCustomAcceptCallback() const noexcept
-  -> std::function<void(Connection*)> {
+auto Acceptor::GetCustomAcceptCallback() const noexcept -> ConnectionCallback {
   return custom_accept_callback_;
 }
 
-auto Acceptor::GetCustomHandleCallback() const noexcept
-  -> std::function<void(Connection*)> {
+auto Acceptor::GetCustomHandleCallback() const noexcept -> ConnectionCallback {
   return custom_handle_callback_;
 }
 
 auto Acceptor::GetAcceptorConnection() noexcept -> Connection* {
-  return acceptor_conn.get();
+  return acceptor_conn_.get();
 }
 
 }    // namespace longlp

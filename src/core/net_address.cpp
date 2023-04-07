@@ -1,4 +1,4 @@
-// Copyright 2023 Long Le Phi. All rights reserved.
+// Copyright 2023 Phi-Long Le. All rights reserved.
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
@@ -11,27 +11,31 @@
 namespace longlp {
 
 NetAddress::NetAddress() noexcept {
-  memset(&addr_, 0, sizeof(addr_));
+  memset(&address_data_, 0, sizeof(address_data_));
 }
 
 NetAddress::
   NetAddress(const std::string_view ip, uint16_t port, Protocol protocol) :
   protocol_(protocol) {
-  memset(&addr_, 0, sizeof(addr_));
+  memset(&address_data_, 0, sizeof(address_data_));
 
-  if (protocol_ == Protocol::Ipv4) {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    auto* addr_ipv4       = reinterpret_cast<sockaddr_in*>(&addr_);
-    addr_ipv4->sin_family = AF_INET;
-    inet_pton(AF_INET, ip.data(), &addr_ipv4->sin_addr.s_addr);
-    addr_ipv4->sin_port = htons(port);
-  }
-  else {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    auto* addr_ipv6        = reinterpret_cast<sockaddr_in6*>(&addr_);
-    addr_ipv6->sin6_family = AF_INET6;
-    inet_pton(AF_INET6, ip.data(), &addr_ipv6->sin6_addr.s6_addr);
-    addr_ipv6->sin6_port = htons(port);
+  switch (protocol_) {
+    case Protocol::Ipv4:
+      {
+        auto* as_ipv4       = std::bit_cast<sockaddr_in*>(&address_data_);
+        as_ipv4->sin_family = AF_INET;
+        inet_pton(AF_INET, ip.data(), &as_ipv4->sin_addr.s_addr);
+        as_ipv4->sin_port = htons(port);
+      }
+      break;
+    case Protocol::Ipv6:
+      {
+        auto* as_ipv6        = std::bit_cast<sockaddr_in6*>(&address_data_);
+        as_ipv6->sin6_family = AF_INET6;
+        inet_pton(AF_INET6, ip.data(), &as_ipv6->sin6_addr.s6_addr);
+        as_ipv6->sin6_port = htons(port);
+      }
+      break;
   }
 }
 
@@ -39,40 +43,43 @@ auto NetAddress::GetIp() const noexcept -> std::string {
   // long enough for both Ipv4 and Ipv6
   std::string ip_address(INET6_ADDRSTRLEN, 0);
 
-  if (protocol_ == Protocol::Ipv4) {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    auto* addr_ipv4 = reinterpret_cast<sockaddr_in*>(&addr_);
-    inet_ntop(
-      AF_INET,
-      &addr_ipv4->sin_addr,
-      ip_address.data(),
-      INET_ADDRSTRLEN);
+  switch (protocol_) {
+    case Protocol::Ipv4:
+      {
+        const auto* as_ipv4 = std::bit_cast<const sockaddr_in*>(&address_data_);
+        inet_ntop(
+          AF_INET,
+          &as_ipv4->sin_addr,
+          ip_address.data(),
+          INET_ADDRSTRLEN);
+      }
+      break;
+    case Protocol::Ipv6:
+      {
+        const auto* as_ipv6 =
+          std::bit_cast<const sockaddr_in6*>(&address_data_);
+        inet_ntop(
+          AF_INET6,
+          &as_ipv6->sin6_addr,
+          ip_address.data(),
+          INET6_ADDRSTRLEN);
+      }
+      break;
   }
-  else {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    auto* addr_ipv6 = reinterpret_cast<sockaddr_in6*>(&addr_);
-    inet_ntop(
-      AF_INET6,
-      &addr_ipv6->sin6_addr,
-      ip_address.data(),
-      INET6_ADDRSTRLEN);
-  }
+
   return ip_address;
 }
 
 auto NetAddress::GetPort() const noexcept -> uint16_t {
-  uint16_t port{};
   if (protocol_ == Protocol::Ipv4) {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    auto* addr_ipv4 = reinterpret_cast<sockaddr_in*>(&addr_);
-    port            = ntohs(addr_ipv4->sin_port);
+    const auto* as_ipv4 = std::bit_cast<const sockaddr_in*>(&address_data_);
+    return ntohs(as_ipv4->sin_port);
   }
-  else {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    auto* addr_ipv6 = reinterpret_cast<sockaddr_in6*>(&addr_);
-    port            = ntohs(addr_ipv6->sin6_port);
-  }
-  return port;
+
+  // IP v6
+
+  const auto* as_ipv6 = std::bit_cast<const sockaddr_in6*>(&address_data_);
+  return ntohs(as_ipv6->sin6_port);
 }
 
 auto NetAddress::ToString() const noexcept -> std::string {

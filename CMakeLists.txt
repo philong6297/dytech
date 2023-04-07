@@ -1,4 +1,4 @@
-# Copyright 2023 Long Le Phi. All rights reserved.
+# Copyright 2023 Phi-Long Le. All rights reserved.
 # Use of this source code is governed by a MIT license that can be
 # found in the LICENSE file.
 
@@ -34,6 +34,7 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(fmt CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Catch2 3 CONFIG REQUIRED)
+find_package(Microsoft.GSL CONFIG REQUIRED)
 
 add_subdirectory(${LONGLP_PROJECT_SRC_DIR})
 

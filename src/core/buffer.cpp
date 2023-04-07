@@ -1,10 +1,12 @@
-// Copyright 2023 Long Le Phi. All rights reserved.
+// Copyright 2023 Phi-Long Le. All rights reserved.
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
 #include "core/buffer.h"
 
 #include <algorithm>
+#include <bit>
+#include <gsl/assert>
 
 namespace longlp {
 
@@ -68,8 +70,7 @@ auto Buffer::FindAndPopTill(const std::string& target)
 }
 
 auto Buffer::ToStringView() const noexcept -> std::string_view {
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  return {reinterpret_cast<const char*>(buf_.data()), buf_.size()};
+  return {std::bit_cast<const char*>(buf_.data()), buf_.size()};
 }
 
 }    // namespace longlp

@@ -1,4 +1,4 @@
-// Copyright 2023 Long Le Phi. All rights reserved.
+// Copyright 2023 Phi-Long Le. All rights reserved.
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include <arpa/inet.h>
 
+#include <bit>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -32,9 +33,8 @@ class NetAddress {
     return protocol_;
   }
 
-  [[nodiscard]] auto YieldAddr() -> struct sockaddr* {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    return reinterpret_cast<struct sockaddr*>(&addr_);
+  [[nodiscard]] auto YieldAddr() -> sockaddr* {
+    return std::bit_cast<sockaddr*>(&address_data_);
   }
 
   [[nodiscard]] auto YieldAddrLen() -> socklen_t* { return &addr_len_; }
@@ -48,9 +48,9 @@ class NetAddress {
  private:
   Protocol protocol_{Protocol::Ipv4};
 
-  mutable sockaddr_storage addr_{};
+  sockaddr_storage address_data_{};
 
-  socklen_t addr_len_ = sizeof(addr_);
+  socklen_t addr_len_ = sizeof(address_data_);
 };
 
 [[nodiscard]] auto

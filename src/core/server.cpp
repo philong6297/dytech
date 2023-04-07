@@ -1,4 +1,4 @@
-// Copyright 2023 Long Le Phi. All rights reserved.
+// Copyright 2023 Phi-Long Le. All rights reserved.
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
@@ -29,12 +29,12 @@ Server::Server(NetAddress server_address, int concurrency) :
 Server::~Server() = default;
 
 auto Server::OnAccept(std::function<void(Connection*)> on_accept) -> Server& {
-  acceptor_->SetCustomAcceptCallback(std::move(on_accept));
+  acceptor_->SetAcceptCallback(std::move(on_accept));
   return *this;
 }
 
 auto Server::OnHandle(std::function<void(Connection*)> on_handle) -> Server& {
-  acceptor_->SetCustomHandleCallback(std::move(on_handle));
+  acceptor_->SetHandleCallback(std::move(on_handle));
   on_handle_set_ = true;
   return *this;
 }

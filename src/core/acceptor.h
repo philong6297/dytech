@@ -1,4 +1,4 @@
-// Copyright 2023 Long Le Phi. All rights reserved.
+// Copyright 2023 Phi-Long Le. All rights reserved.
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/pointers.h"
 #include "core/utils.h"
 
 namespace longlp {
@@ -24,38 +25,38 @@ class Connection;
 class Acceptor {
  public:
   Acceptor(
-    Looper* listener,
-    std::vector<Looper*> reactors,
+    not_null<Looper*> listener,
+    std::vector<not_null<Looper*>> reactors,
     NetAddress server_address);
 
   ~Acceptor();
 
+  using ConnectionCallback = std::function<void(not_null<Connection*>)>;
+
   DISALLOW_COPY(Acceptor);
   DEFAULT_MOVE(Acceptor);
 
-  // basic functionality for accepting new connection provided to the acceptor
-  // by default
-  void BaseAcceptCallback(Connection* server_conn);
+  void SetAcceptCallback(ConnectionCallback custom_accept_callback);
 
-  void SetCustomAcceptCallback(
-    std::function<void(Connection*)> custom_accept_callback);
-
-  void SetCustomHandleCallback(
-    std::function<void(Connection*)> custom_handle_callback);
+  void SetHandleCallback(ConnectionCallback custom_handle_callback);
 
   [[nodiscard]] auto
-  GetCustomAcceptCallback() const noexcept -> std::function<void(Connection*)>;
+  GetCustomAcceptCallback() const noexcept -> ConnectionCallback;
 
   [[nodiscard]] auto
-  GetCustomHandleCallback() const noexcept -> std::function<void(Connection*)>;
+  GetCustomHandleCallback() const noexcept -> ConnectionCallback;
 
   [[nodiscard]] auto GetAcceptorConnection() noexcept -> Connection*;
 
  private:
-  std::vector<Looper*> reactors_;
-  std::unique_ptr<Connection> acceptor_conn;
-  std::function<void(Connection*)> custom_accept_callback_{};
-  std::function<void(Connection*)> custom_handle_callback_{};
+  // basic functionality for accepting new connection provided to the acceptor
+  // by default
+  void BaseAcceptCallback(Connection* server_conn);
+
+  std::vector<not_null<Looper*>> reactors_;
+  std::unique_ptr<Connection> acceptor_conn_;
+  ConnectionCallback custom_accept_callback_{};
+  ConnectionCallback custom_handle_callback_{};
 };
 
 }    // namespace longlp

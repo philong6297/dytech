@@ -1,4 +1,4 @@
-// Copyright 2023 Long Le Phi. All rights reserved.
+// Copyright 2023 Phi-Long Le. All rights reserved.
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@ Poller::Poller(uint64_t poll_size) :
   poll_events_(poll_size, DefaultPollEvent()) {
   if (poll_fd_ == -1) {
     perror("Poller: epoll_create1() error");
+    // TODO(longlp): It is not thread-safe
     exit(EXIT_FAILURE);
   }
 }
@@ -40,22 +41,30 @@ Poller::~Poller() {
 
 void Poller::AddConnection(Connection* conn) const {
   assert(conn->GetFd() != -1 && "cannot AddConnection() with an invalid fd");
-  struct epoll_event event;
-  memset(&event, 0, sizeof(struct epoll_event));
+
+  auto event     = DefaultPollEvent();
   event.data.ptr = conn;
   event.events   = conn->GetEvents();
-  int ret_val = epoll_ctl(poll_fd_, Poller::Event::kAdd, conn->GetFd(), &event);
+
+  auto ret_val =
+    epoll_ctl(poll_fd_, Poller::Event::kAdd, conn->GetFd(), &event);
   if (ret_val == -1) {
     perror("Poller: epoll_ctl add error");
+    // TODO(longlp): It is not thread-safe
     exit(EXIT_FAILURE);
   }
 }
 
 auto Poller::Poll(int timeout) -> std::vector<Connection*> {
   std::vector<Connection*> events_happen;
-  int ready = epoll_wait(poll_fd_, poll_events_, poll_size_, timeout);
+  int ready = epoll_wait(
+    poll_fd_,
+    poll_events_.data(),
+    std::ssize(poll_events_),
+    timeout);
   if (ready == -1) {
     perror("Poller: Poll() error");
+    // TODO(longlp): It is not thread-safe
     exit(EXIT_FAILURE);
   }
   for (int i = 0; i < ready; i++) {
