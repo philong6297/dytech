@@ -9,14 +9,15 @@
 #include <catch2/catch_test_macros.hpp>
 
 /* for convenience reason */
+using longlp::ByteData;
 using longlp::Cache;
 
 TEST_CASE("[core/cache]") {
   const int capacity = 20;
   Cache cache(capacity);
   // "hello!"
-  std::vector<uint8_t> data = {104, 101, 108, 108, 111, 33};
-  const auto data_size      = data.size();
+  ByteData data        = {104, 101, 108, 108, 111, 33};
+  const auto data_size = data.size();
 
   REQUIRE(cache.GetOccupancy() == 0);
   REQUIRE(cache.GetCapacity() == capacity);
@@ -30,7 +31,7 @@ TEST_CASE("[core/cache]") {
       CHECK(cache.GetOccupancy() == i * data_size);
     }
 
-    std::vector<uint8_t> read_buf;
+    ByteData read_buf;
     // all url1, url2, url3 should be available
     for (int i = 1; i <= capacity / data_size; i++) {
       auto load_success = cache.TryLoad("url" + std::to_string(i), read_buf);

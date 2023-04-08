@@ -4,16 +4,19 @@
  * @expectation this
  *
  *
+ *
  * implementation
  * file should be compatible to compile in C++
- * program on
+ * program
+ * on
 
 
  * * * Linux
  * @init_date
  * Jan 10 2023
  *
- * This is an implementation file
+ * This is an
+ * implementation file
 
  * *
  * implementing the HTTP
@@ -82,7 +85,7 @@ Response::Response(
   }
 }
 
-void Response::Serialize(std::vector<uint8_t>& buffer) {
+void Response::Serialize(ByteData& buffer) {
   // construct everything before body
   std::stringstream str_stream;
   str_stream << status_line_ << CRLF;

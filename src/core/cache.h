@@ -2,10 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef CORE_CACHE_H_
-#define CORE_CACHE_H_
-
-#include <core/utils.h>
+#ifndef SRC_CORECACHE_H_
+#define SRC_CORECACHE_H_
 
 #include <memory>
 #include <mutex>
@@ -13,6 +11,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "base/macros.h"
+#include "core/typedefs.h"
 
 namespace longlp {
 
@@ -24,7 +25,7 @@ namespace longlp {
 // are closer to the tail, i.e. with newer timestamp
 class Cache {
  public:
-  /* default cache size 10 MB */
+  // default cache size 10 MB
   static constexpr size_t kDefaultCapacity = 10'485'760U;
 
   explicit Cache(size_t capacity) noexcept;
@@ -40,12 +41,10 @@ class Cache {
   }
 
   [[nodiscard]] auto
-  TryLoad(const std::string& resource_url, std::vector<uint8_t>& destination)
-    -> bool;
+  TryLoad(const std::string& resource_url, ByteData& destination) -> bool;
 
   [[nodiscard]] auto
-  TryInsert(const std::string& resource_url, const std::vector<uint8_t>& source)
-    -> bool;
+  TryInsert(const std::string& resource_url, const ByteData& source) -> bool;
 
   void Clear();
 
@@ -72,4 +71,4 @@ class Cache {
 
 }    // namespace longlp
 
-#endif    // CORE_CACHE_H_
+#endif    // SRC_CORECACHE_H_

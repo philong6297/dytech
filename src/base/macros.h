@@ -2,8 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef CORE_UTILS_H_
-#define CORE_UTILS_H_
+#ifndef SRC_BASE_MACROS_H_
+#define SRC_BASE_MACROS_H_
 
 #define DISALLOW_COPY(class_name)                                        \
   class_name(const class_name&)                                = delete; \
@@ -25,4 +25,4 @@
   DISALLOW_COPY(class_name);               \
   DISALLOW_MOVE(class_name)
 
-#endif    // CORE_UTILS_H_
+#endif    // SRC_BASE_MACROS_H_

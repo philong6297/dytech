@@ -2,21 +2,22 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef CORE_ACCEPTOR_H_
-#define CORE_ACCEPTOR_H_
+#ifndef SRC_COREACCEPTOR_H_
+#define SRC_COREACCEPTOR_H_
 
 #include <functional>
 #include <memory>
-#include <vector>
 
+#include "base/macros.h"
 #include "base/pointers.h"
-#include "core/utils.h"
+#include "core/typedefs.h"
 
 namespace longlp {
 
 class NetAddress;
 class Looper;
 class Connection;
+class DistributionAgent;
 
 // Acceptor that accepts all the incoming new client connections and set up
 // customer handle functions for new clients.
@@ -26,39 +27,27 @@ class Acceptor {
  public:
   Acceptor(
     not_null<Looper*> listener,
-    std::vector<not_null<Looper*>> reactors,
-    NetAddress server_address);
+    not_null<DistributionAgent*> agent,
+    const NetAddress& server_address);
 
   ~Acceptor();
-
-  using ConnectionCallback = std::function<void(not_null<Connection*>)>;
 
   DISALLOW_COPY(Acceptor);
   DEFAULT_MOVE(Acceptor);
 
-  void SetAcceptCallback(ConnectionCallback custom_accept_callback);
+  void SetOnAccept(ConnectionCallback on_accept_callback);
 
-  void SetHandleCallback(ConnectionCallback custom_handle_callback);
-
-  [[nodiscard]] auto
-  GetCustomAcceptCallback() const noexcept -> ConnectionCallback;
-
-  [[nodiscard]] auto
-  GetCustomHandleCallback() const noexcept -> ConnectionCallback;
+  void SetOnHandle(ConnectionCallback on_handle_callback);
 
   [[nodiscard]] auto GetAcceptorConnection() noexcept -> Connection*;
 
  private:
-  // basic functionality for accepting new connection provided to the acceptor
-  // by default
-  void BaseAcceptCallback(Connection* server_conn);
-
-  std::vector<not_null<Looper*>> reactors_;
-  std::unique_ptr<Connection> acceptor_conn_;
-  ConnectionCallback custom_accept_callback_{};
-  ConnectionCallback custom_handle_callback_{};
+  std::unique_ptr<Connection> acceptor_connection_;
+  not_null<DistributionAgent*> agent_;
+  ConnectionCallback on_accept_cb_{};
+  ConnectionCallback on_handle_cb_{};
 };
 
 }    // namespace longlp
 
-#endif    // CORE_ACCEPTOR_H_
+#endif    // SRC_COREACCEPTOR_H_

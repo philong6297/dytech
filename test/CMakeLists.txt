@@ -14,15 +14,15 @@ set(CORE_TARGETS
     thread_pool_test
 )
 foreach(target ${CORE_TARGETS})
-  add_executable(${target} core/${target}.cpp)
+  add_executable(${target} core/${target}.cc)
   target_link_libraries(${target} PRIVATE core Catch2::Catch2WithMain)
   target_compile_options(${target} PRIVATE ${LONGLP_DESIRED_COMPILE_OPTIONS})
   target_include_directories(${target} PRIVATE ${LONGLP_PROJECT_SRC_DIR})
   catch_discover_tests(${target})
 endforeach()
 
-# # HTTP module add_executable(http_test) target_sources(http_test PRIVATE http/header_test.cpp
-# http/request_test.cpp http/response_test.cpp) target_link_libraries(http_test PRIVATE core http
+# # HTTP module add_executable(http_test) target_sources(http_test PRIVATE http/header_test.cc
+# http/request_test.cc http/response_test.cc) target_link_libraries(http_test PRIVATE core http
 # Catch2::Catch2WithMain) target_compile_options(http_test PRIVATE
 # ${LONGLP_DESIRED_COMPILE_OPTIONS}) target_compile_features(http_test PRIVATE
 # ${LONGLP_DESIRED_COMPILE_FEATURES}) target_include_directories(http_test PRIVATE

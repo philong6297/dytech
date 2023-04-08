@@ -10,6 +10,7 @@
 
 /* for convenience reason */
 using longlp::Buffer;
+using longlp::ByteData;
 
 TEST_CASE("[core/buffer]") {
   Buffer buf(Buffer::kDefaultCapacity);
@@ -20,12 +21,12 @@ TEST_CASE("[core/buffer]") {
     constexpr std::string_view msg1 = "Greeting from beginning!";
     constexpr std::string_view msg2 = "Farewell from end~";
 
-    std::vector<uint8_t> buff_1;
+    ByteData buff_1;
     for (auto c : msg1) {
       buff_1.emplace_back(c);
     }
 
-    std::vector<uint8_t> buff_2;
+    ByteData buff_2;
     for (auto c : msg2) {
       buff_2.emplace_back(c);
     }

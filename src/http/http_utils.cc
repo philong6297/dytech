@@ -3,18 +3,21 @@
  * @author Yukun J
  * @expectation this header
  *
+ *
  * file
 
  * * should be compatible to compile in C++
  * program on Linux
  *
  *
- * @init_date
+
+ * * @init_date
  * Jan
  * 10 2023
  *
  * This is an implementation file for http
- *
+
+ * *
  * module's
  * constant enum
  * definitions
@@ -177,9 +180,7 @@ auto CheckFileSize(const std::string& file_path) noexcept -> size_t {
   return std::filesystem::file_size(file_path);
 }
 
-void LoadFile(
-  const std::string& file_path,
-  std::vector<uint8_t>& buffer) noexcept {
+void LoadFile(const std::string& file_path, ByteData& buffer) noexcept {
   size_t file_size       = CheckFileSize(file_path);
   size_t buffer_old_size = buffer.size();
   std::ifstream file(file_path);

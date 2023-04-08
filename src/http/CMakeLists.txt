@@ -6,12 +6,12 @@ target_sources(
           http_utils.h
           request.h
           response.h
-          header.cpp
-          http_utils.cpp
-          request.cpp
-          response.cpp
+          header.cc
+          http_utils.cc
+          request.cc
+          response.cc
           cgier.h
-          cgier.cpp
+          cgier.cc
 )
 target_link_libraries(http PUBLIC log)
 target_compile_options(http PUBLIC ${LONGLP_DESIRED_COMPILE_OPTIONS})

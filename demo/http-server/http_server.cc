@@ -4,7 +4,8 @@
  * @expectation this is
  *
 
- *
+
+ * *
 
 
  * * * *
@@ -25,6 +26,7 @@
 
 
  * * * http
+ *
  * server
 
  * * for
@@ -37,6 +39,7 @@
 
 
  * * * test
+ *
  * purpose
 
  * *
@@ -52,6 +55,7 @@
  * *
  * * Jan
  * 3
+ *
  *
  *
  * 2023
@@ -90,7 +94,7 @@ void ProcessHttpRequest(
     client_conn->FindAndPopTill("\r\n\r\n");
   while (request_op != std::nullopt) {
     Request request{request_op.value()};
-    std::vector<uint8_t> response_buf;
+    ByteData response_buf;
     if (!request.IsValid()) {
       auto response = Response::Make400Response();
       no_more_parse = true;
@@ -142,7 +146,7 @@ void ProcessHttpRequest(
             Make200Response(request.ShouldClose(), resource_full_path);
           response.Serialize(response_buf);
           no_more_parse = request.ShouldClose();
-          std::vector<uint8_t> cache_buf;
+          ByteData cache_buf;
           if (request.GetMethod() == Method::GET) {
             // only concern about carrying content when GET request
             bool resource_cached =

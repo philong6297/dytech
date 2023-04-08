@@ -2,7 +2,7 @@
 add_library(core STATIC)
 target_sources(
   core
-  PRIVATE acceptor.cpp
+  PRIVATE acceptor.cc
           acceptor.h
           buffer.h
           cache.h
@@ -13,17 +13,19 @@ target_sources(
           socket.h
           thread_pool.h
           server.h
-          utils.h
-          buffer.cpp
-          cache.cpp
-          connection.cpp
-          looper.cpp
-          net_address.cpp
-          poller.cpp
-          socket.cpp
-          thread_pool.cpp
-          server.cpp
+          buffer.cc
+          cache.cc
+          connection.cc
+          looper.cc
+          net_address.cc
+          poller.cc
+          socket.cc
+          thread_pool.cc
+          server.cc
+          typedefs.h
+          distribution_agent.cc
+          distribution_agent.h
 )
 target_link_libraries(core PUBLIC log Threads::Threads base)
-target_compile_options(core PUBLIC ${LONGLP_DESIRED_COMPILE_OPTIONS})
+target_compile_options(core PUBLIC ${LONGLP_DESIRED_COMPILE_OPTIONS} -Wno-unsafe-buffer-usage)
 target_include_directories(core PUBLIC ${LONGLP_PROJECT_SRC_DIR})

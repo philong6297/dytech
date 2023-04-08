@@ -2,17 +2,17 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef CORE_CONNECTION_H_
-#define CORE_CONNECTION_H_
+#ifndef SRC_CORECONNECTION_H_
+#define SRC_CORECONNECTION_H_
 
-#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "core/utils.h"
+#include "base/macros.h"
+#include "core/typedefs.h"
 
 namespace longlp {
 
@@ -48,28 +48,22 @@ class Connection {
     return revents_;
   }
 
-  void SetCallback(const std::function<void(Connection*)>& callback) {
-    callback_ = [callback, this] {
-      return callback(this);
-    };
-  }
+  void SetCallback(const ConnectionCallback& callback) { callback_ = callback; }
 
-  [[nodiscard]] auto GetCallback() noexcept -> std::function<void()> {
-    return callback_;
-  }
+  void Start();
 
   // for Buffer
   [[nodiscard]] auto
   FindAndPopTill(const std::string& target) -> std::optional<std::string>;
   [[nodiscard]] auto GetReadBufferSize() const noexcept -> size_t;
   [[nodiscard]] auto GetWriteBufferSize() const noexcept -> size_t;
-  void WriteToReadBuffer(const uint8_t* buf, size_t size);
-  void WriteToWriteBuffer(const uint8_t* buf, size_t size);
+  void WriteToReadBuffer(const Byte* buf, size_t size);
+  void WriteToWriteBuffer(const Byte* buf, size_t size);
   void WriteToReadBuffer(const std::string& str);
   void WriteToWriteBuffer(const std::string& str);
-  void WriteToWriteBuffer(std::vector<uint8_t>&& other_buf);
+  void WriteToWriteBuffer(ByteData&& other_buf);
 
-  [[nodiscard]] auto Read() const noexcept -> const uint8_t*;
+  [[nodiscard]] auto Read() const noexcept -> const Byte*;
   [[nodiscard]] auto ReadAsString() const noexcept -> std::string;
 
   // return std::pair<How many bytes read, whether the client exists>
@@ -89,8 +83,8 @@ class Connection {
   std::unique_ptr<Buffer> write_buffer_;
   uint32_t events_{0};
   uint32_t revents_{0};
-  std::function<void()> callback_{nullptr};
+  ConnectionCallback callback_{};
 };
 
 }    // namespace longlp
-#endif    // CORE_CONNECTION_H_
+#endif    // SRC_CORECONNECTION_H_

@@ -11,7 +11,9 @@
 #include <vector>
 
 #include <catch2/catch_test_macros.hpp>
+
 #include "core/connection.h"
+#include "core/distribution_agent.h"
 #include "core/looper.h"
 #include "core/net_address.h"
 #include "core/poller.h"
@@ -20,8 +22,10 @@
 
 using longlp::Acceptor;
 using longlp::Connection;
+using longlp::DistributionAgent;
 using longlp::Looper;
 using longlp::NetAddress;
+using longlp::not_null;
 using longlp::Protocol;
 using longlp::Socket;
 using longlp::ThreadPool;
@@ -32,10 +36,16 @@ TEST_CASE("[core/acceptor]") {
   ThreadPool pool;
 
   // built an acceptor will one listener looper and one reactor together
-  auto single_reactor               = std::make_unique<Looper>();
+  auto single_reactor = std::make_unique<Looper>();
 
-  std::vector<Looper*> raw_reactors = {single_reactor.get()};
-  Acceptor acceptor(single_reactor.get(), raw_reactors, local_host);
+  std::vector<std::unique_ptr<Looper>> reactors;
+  reactors.emplace_back(std::make_unique<Looper>());
+
+  auto agent = std::make_unique<DistributionAgent>();
+  for (auto& reactor : reactors) {
+    agent->AddCandidate(reactor.get());
+  }
+  Acceptor acceptor(single_reactor.get(), agent.get(), local_host);
 
   REQUIRE(acceptor.GetAcceptorConnection()->GetFd() != -1);
 
@@ -47,8 +57,8 @@ TEST_CASE("[core/acceptor]") {
     std::atomic<int> handle_trigger = 0;
 
     // set acceptor customize functions
-    acceptor.SetAcceptCallback([&](Connection*) { accept_trigger++; });
-    acceptor.SetHandleCallback([&](Connection*) { handle_trigger++; });
+    acceptor.SetOnAccept([&](not_null<Connection*>) { accept_trigger++; });
+    acceptor.SetOnHandle([&](not_null<Connection*>) { handle_trigger++; });
 
     // start three clients and connect with server
     const char* msg = "Hello from client!";

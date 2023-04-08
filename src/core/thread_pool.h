@@ -3,13 +3,17 @@
  * @author Yukun J
  * @expectation this header
  *
+
  *
+ * *
 
  * * file
 
 
  * * * should be compatible to compile in C++
- * program on Linux
+ * program on
+ *
+ * Linux
 
  * *
 
@@ -19,14 +23,18 @@
  * * Dec
  * 26 2022
  *
- * This is a header file
+ * This is a header
+
+ * * file
  * implementing
 
  * * the
  * ThreadPool for
 
  * *
- * maintaining and serving
+ * maintaining and
+
+ * * serving
  *
  * the concurrent
  *
@@ -46,9 +54,9 @@
 #include <utility>
 #include <vector>
 
-#include "core/utils.h"
-#ifndef CORE_THREAD_POOL_H_
-#  define CORE_THREAD_POOL_H_
+#include "base/macros.h"
+#ifndef SRC_CORETHREAD_POOL_H_
+#  define SRC_CORETHREAD_POOL_H_
 
 namespace longlp {
 
@@ -58,6 +66,8 @@ static constexpr int MIN_NUM_THREADS_IN_POOL = 2;
 /**
  * This ThreadPool manages the thread resources and acts as the
  *
+ *
+ *
  * executor
 
 
@@ -65,8 +75,10 @@ static constexpr int MIN_NUM_THREADS_IN_POOL = 2;
 
  * * * * * for
  * client requests upon submitting a task, it
- *
- * gives back a
+
+ * *
+
+ * * gives back a
  * future
 
  * * to
@@ -119,4 +131,4 @@ ThreadPool::SubmitTask(F&& new_task, Args&&... args) -> decltype(auto) {
 }
 }    // namespace longlp
 
-#endif    // CORE_THREAD_POOL_H_
+#endif    // SRC_CORETHREAD_POOL_H_

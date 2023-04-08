@@ -5,9 +5,11 @@
  *
 
 
- * * *
+
+ * * * *
  * should be compatible to compile in C++
  * program on Linux
+ *
  *
  *
  * @init_date
@@ -17,17 +19,20 @@
  *
  * This is an implementation file
  *
+ *
  * implementing the CGIer
  * that
  *
  * forks another
- * process to run the cgi
+ * process to run the
+ * cgi
 
  * * program commanded by the
  * client
  *
  * through http request
- * in a
+ * in
+ * a
  * RESTful
  * style
  */
@@ -75,9 +80,9 @@ Cgier::Cgier(
   cgi_arguments_(arguments),
   valid_(true) {}
 
-auto Cgier::Run() -> std::vector<uint8_t> {
+auto Cgier::Run() -> ByteData {
   assert(valid_);
-  std::vector<uint8_t> cgi_result;
+  ByteData cgi_result;
   // unique shared filename within one Cgier
   // when communicating between parent and child
   std::stringstream ssr;

@@ -18,7 +18,9 @@
 #include <string>
 #include <thread>
 
-#include "core/utils.h"
+#include "base/chrono.h"
+#include "base/macros.h"
+#include "base/no_destructor.h"
 
 namespace longlp {
 
@@ -41,8 +43,9 @@ class Logger {
   DISALLOW_COPY_AND_MOVE(Logger);
 
  private:
-  struct Log;
-  struct StreamWriter;
+  class Log;
+  class StreamWriter;
+  friend class NoDestructor<Logger>;
 
   explicit Logger();
 
@@ -60,7 +63,7 @@ class Logger {
   std::condition_variable cv_;
   std::deque<Log> queue_;
   std::thread log_writer_;
-  std::chrono::microseconds last_flush_;
+  microseconds last_flush_;
 };
 
 template <LogLevel level>

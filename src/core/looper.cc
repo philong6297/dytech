@@ -24,8 +24,8 @@ Looper::~Looper() = default;
 void Looper::Loop() {
   while (!exit_) {
     auto ready_connections = poller_->Poll(kTimeoutMs);
-    for (auto& conn : ready_connections) {
-      conn->GetCallback()();
+    for (auto& connection : ready_connections) {
+      connection->Start();
     }
   }
 }

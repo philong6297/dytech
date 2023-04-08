@@ -4,11 +4,13 @@
 
 #include "core/connection.h"
 
-#include <fmt/format.h>
 #include <sys/socket.h>
 #include <array>
 #include <cstring>
 
+#include <fmt/format.h>
+
+#include "base/utils.h"
 #include "core/buffer.h"
 #include "core/socket.h"
 #include "log/logger.h"
@@ -47,11 +49,11 @@ auto Connection::GetWriteBufferSize() const noexcept -> size_t {
   return write_buffer_->Size();
 }
 
-void Connection::WriteToReadBuffer(const uint8_t* buf, size_t size) {
+void Connection::WriteToReadBuffer(const Byte* buf, size_t size) {
   read_buffer_->AppendUnsafe(buf, size);
 }
 
-void Connection::WriteToWriteBuffer(const uint8_t* buf, size_t size) {
+void Connection::WriteToWriteBuffer(const Byte* buf, size_t size) {
   write_buffer_->AppendUnsafe(buf, size);
 }
 
@@ -63,11 +65,11 @@ void Connection::WriteToWriteBuffer(const std::string& str) {
   write_buffer_->Append(str);
 }
 
-void Connection::WriteToWriteBuffer(std::vector<uint8_t>&& other_buf) {
+void Connection::WriteToWriteBuffer(ByteData&& other_buf) {
   write_buffer_->Append(std::move(other_buf));
 }
 
-auto Connection::Read() const noexcept -> const uint8_t* {
+auto Connection::Read() const noexcept -> const Byte* {
   return read_buffer_->Data();
 }
 
@@ -79,14 +81,14 @@ auto Connection::ReadAsString() const noexcept -> std::string {
 auto Connection::Recv() -> std::pair<ssize_t, bool> {
   // read all available bytes, since Edge-trigger
   ssize_t read = 0;
-  std::array<uint8_t, kBufferSize + 1> buf{};
+  std::array<Byte, kBufferSize + 1> buf{};
   buf.fill(0);
 
   while (true) {
     ssize_t curr_read = recv(GetFd(), buf.data(), kBufferSize, 0);
     if (curr_read > 0) {
       read += curr_read;
-      WriteToReadBuffer(buf.data(), static_cast<size_t>(curr_read));
+      WriteToReadBuffer(buf.data(), narrow_cast<size_t>(curr_read));
       buf.fill(0);
       continue;
     }
@@ -116,13 +118,13 @@ auto Connection::Recv() -> std::pair<ssize_t, bool> {
 }
 
 void Connection::Send() {
-  const auto to_write = static_cast<ssize_t>(GetWriteBufferSize());
-  const uint8_t* buf  = write_buffer_->Data();
+  const auto to_write = narrow_cast<ssize_t>(GetWriteBufferSize());
+  const Byte* buf     = write_buffer_->Data();
   for (ssize_t curr_write = 0; curr_write < to_write;) {
     auto write = send(
       GetFd(),
       buf + curr_write,
-      static_cast<size_t>(to_write - curr_write),
+      narrow_cast<size_t>(to_write - curr_write),
       0);
     if (write <= 0) {
       if (errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK) {
@@ -143,6 +145,10 @@ void Connection::ClearReadBuffer() noexcept {
 
 void Connection::ClearWriteBuffer() noexcept {
   write_buffer_->Clear();
+}
+
+void Connection::Start() {
+  callback_(this);
 }
 
 }    // namespace longlp

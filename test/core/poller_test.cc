@@ -67,7 +67,7 @@ TEST_CASE("[core/poller]") {
       poller.AddConnection(client_conns[i].get());
     }
     sleep(1);
-    auto ready_conns = poller.Poll();
+    auto ready_conns = poller.Poll(Poller::kBlockForever);
     CHECK(ready_conns.size() == client_num);
 
     for (int i = 0; i < client_num; i++) {

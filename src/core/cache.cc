@@ -5,25 +5,26 @@
 #include "core/cache.h"
 
 #include <cassert>
-#include <chrono>
 #include <utility>
+
+#include "base/chrono.h"
 
 namespace longlp {
 
 // Helper class inside the Cache
-// It represents a single file cached in the form of an uint8_t vector
+// It represents a single file cached in the form of an Byte vector
 // and serves as a node in the doubly-linked list data structure
 class Cache::CacheNode {
  public:
   CacheNode() noexcept { UpdateTimestamp(); }
 
-  CacheNode(std::string identifier, const std::vector<uint8_t>& data) :
+  CacheNode(std::string identifier, const ByteData& data) :
     identifier_(std::move(identifier)),
     data_(data) {
     UpdateTimestamp();
   }
 
-  void Serialize(std::vector<uint8_t>& destination) {
+  void Serialize(ByteData& destination) {
     if (const auto new_cap = destination.size() + data_.size();
         destination.capacity() < new_cap) {
       destination.reserve(new_cap);
@@ -36,12 +37,7 @@ class Cache::CacheNode {
     next_->prev_ = prev_;
   }
 
-  void UpdateTimestamp() noexcept {
-    last_access_ =
-      std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch())
-        .count();
-  }
+  void UpdateTimestamp() noexcept { last_access_ = GetCurrentTimeMs().count(); }
 
  private:
   friend class Cache;
@@ -49,7 +45,7 @@ class Cache::CacheNode {
   // the resource identifier for this node
   std::string identifier_;
   // may contain binary data
-  std::vector<uint8_t> data_;
+  ByteData data_;
   // the timestamp of last access in milliseconds
   int64_t last_access_{0};
   CacheNode* prev_{nullptr};
@@ -66,9 +62,8 @@ Cache::Cache(size_t capacity) noexcept :
 
 Cache::~Cache() = default;
 
-auto Cache::TryLoad(
-  const std::string& resource_url,
-  std::vector<uint8_t>& destination) -> bool {
+auto Cache::TryLoad(const std::string& resource_url, ByteData& destination)
+  -> bool {
   // TODO(longlp): Why do we use shared here
   std::shared_lock<std::shared_mutex> lock(mtx_);
   auto iter = mapping_.find(resource_url);
@@ -83,9 +78,8 @@ auto Cache::TryLoad(
   return false;
 }
 
-auto Cache::TryInsert(
-  const std::string& resource_url,
-  const std::vector<uint8_t>& source) -> bool {
+auto Cache::TryInsert(const std::string& resource_url, const ByteData& source)
+  -> bool {
   // TODO(longlp): Why do we use unique here
   std::unique_lock<std::shared_mutex> lock(mtx_);
 

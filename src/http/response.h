@@ -3,13 +3,17 @@
  * @author Yukun J
  * @expectation this header file
 
+
  *
+ * *
 
  * * *
 
 
  * * * should be compatible to compile in C++
- * program on Linux
+ * program on
+ *
+ * Linux
  *
 
  * *
@@ -19,7 +23,9 @@
 
  * * 31 2022
  *
- * This is a header file
+ * This is a header
+
+ * * file
  * implementing
 
  * * the HTTP
@@ -34,19 +40,23 @@
 #include <string>
 #include <vector>
 
+#include "core/typedefs.h"
+
 namespace longlp::HTTP {
 
 class Header;
 
 /**
  * The HTTP Response class
- * use vector of char to be able to contain
+ * use vector of char to be able to
+ * contain
 
 
 
 
 
- * * *
+
+ * * * *
  * * * * binary data
  */
 class Response {
@@ -68,7 +78,7 @@ class Response {
     std::optional<std::string> resource_url);
 
   /* no content, content should separately be loaded */
-  void Serialize(std::vector<uint8_t>& buffer);
+  void Serialize(ByteData& buffer);
 
   [[nodiscard]] auto GetHeaders() -> std::vector<Header>;
 
@@ -81,7 +91,7 @@ class Response {
   bool should_close_;
   std::vector<Header> headers_;
   std::optional<std::string> resource_url_;
-  std::vector<uint8_t> body_;
+  ByteData body_;
 };
 
 }    // namespace longlp::HTTP

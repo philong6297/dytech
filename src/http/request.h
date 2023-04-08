@@ -5,9 +5,11 @@
  *
 
 
- * * *
+
+ * * * *
  * should be compatible to compile in C++
  * program on Linux
+ *
  *
  *
  * @init_date
@@ -15,7 +17,8 @@
 
  * * 30 2022
  *
- * This is a header file implementing the
+ * This is a header file implementing
+ * the
 
  * * HTTP request
 
@@ -27,7 +30,7 @@
 #include <string>
 #include <vector>
 
-#include "core/utils.h"
+#include "base/macros.h"
 
 namespace longlp::HTTP {
 
@@ -38,18 +41,21 @@ enum class Version;
 /**
  * The (limited GET/HEAD-only HTTP 1.1) HTTP Request class
  * it
+ *
  * contains
 
 
 
  * * * * necessary request line features including method,
+ *
  * resource url,
  *
  * http
 
 
  * * * version and since we supports http 1.1, it
- * also cares if the
+
+ * * also cares if the
  * client
  *
 

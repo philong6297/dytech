@@ -2,8 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef CORE_LOOPER_H_
-#define CORE_LOOPER_H_
+#ifndef SRC_CORELOOPER_H_
+#define SRC_CORELOOPER_H_
 
 #include <atomic>
 #include <functional>
@@ -12,7 +12,7 @@
 #include <memory>
 #include <mutex>
 
-#include "core/utils.h"
+#include "base/macros.h"
 
 namespace longlp {
 
@@ -46,4 +46,4 @@ class Looper {
   bool exit_{false};
 };
 }    // namespace longlp
-#endif    // CORE_LOOPER_H_
+#endif    // SRC_CORELOOPER_H_

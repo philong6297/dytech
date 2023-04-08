@@ -4,30 +4,51 @@
  * @expectation this
  *
  *
- * implementation
+ *
+ *
+ *
+
+
+ * * * implementation
 
 
  * * * file should be compatible to compile in C++
  *
- *
- *
- * program on Linux
+
+ * *
+
+
+ * *
+ * *
+
+ * * program on Linux
  *
  *
  * @init_date
  * Dec 25 2022
  *
- * This is an
  *
- *
- * implementation file implementing
+ * This
+ * is
+ * an
 
- * * the Socket,
- * which acts as either
+ * *
+ *
+
+ * * implementation file implementing
+
+ * * the
+ * Socket,
+ *
+ * which
+ * acts
+ * as
+ * either
 
 
  * * *
- * the listener or client
+ * the listener or
+ * client
  */
 #include "core/socket.h"
 
@@ -74,27 +95,32 @@ auto Socket::GetFd() const noexcept -> int {
   return fd_;
 }
 
-void Socket::Connect(NetAddress& server_address) {
+void Socket::Connect(const NetAddress& server_address) {
   if (fd_ == -1) {
     CreateByProtocol(server_address.GetProtocol());
   }
   if (
-    connect(fd_, server_address.YieldAddr(), *server_address.YieldAddrLen()) ==
-    -1) {
+    connect(
+      fd_,
+      server_address.address_data(),
+      *server_address.address_data_length()) == -1) {
     Log<LogLevel::kError>("Socket: Connect() error");
     throw std::logic_error("Socket: Connect() error");
   }
 }
 
-void Socket::Bind(NetAddress& server_address, bool set_reusable) {
+void Socket::Bind(const NetAddress& server_address, bool set_reusable) {
   if (fd_ == -1) {
     CreateByProtocol(server_address.GetProtocol());
   }
   if (set_reusable) {
     SetReusable();
   }
-  if (bind(fd_, server_address.YieldAddr(), *server_address.YieldAddrLen()) ==
-      -1) {
+  if (
+    bind(
+      fd_,
+      server_address.address_data(),
+      *server_address.address_data_length()) == -1) {
     Log<LogLevel::kError>("Socket: Bind() error");
     throw std::logic_error("Socket: Bind() error");
   }
@@ -110,8 +136,10 @@ void Socket::Listen() {
 
 auto Socket::Accept(NetAddress& client_address) -> int {
   assert(fd_ != -1 && "cannot Accept() with an invalid fd");
-  int client_fd =
-    accept(fd_, client_address.YieldAddr(), client_address.YieldAddrLen());
+  int client_fd = accept(
+    fd_,
+    client_address.address_data(),
+    client_address.address_data_length());
   if (client_fd == -1) {
     // under high pressure, accept might fail.
     // but server should not fail at this time

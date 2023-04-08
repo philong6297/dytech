@@ -6,7 +6,8 @@
 
 #include <algorithm>
 #include <bit>
-#include <gsl/assert>
+
+#include "base/utils.h"
 
 namespace longlp {
 
@@ -16,7 +17,7 @@ Buffer::Buffer(size_t initial_capacity) {
 
 Buffer::~Buffer() = default;
 
-void Buffer::AppendUnsafe(const uint8_t* data, size_t size) {
+void Buffer::AppendUnsafe(const Byte* data, size_t size) {
   buf_.insert(buf_.end(), data, data + size);
 }
 
@@ -25,21 +26,21 @@ void Buffer::Append(const std::string& str) {
     str.begin(),
     str.end(),
     std::back_inserter(buf_),
-    [](const char c) { return static_cast<uint8_t>(c); });
+    [](const char c) { return narrow_cast<Byte>(c); });
 }
 
-void Buffer::Append(std::vector<uint8_t>&& other_buffer) {
+void Buffer::Append(ByteData&& other_buffer) {
   buf_.insert(
     buf_.end(),
     std::make_move_iterator(other_buffer.begin()),
     std::make_move_iterator(other_buffer.end()));
 }
 
-void Buffer::AppendHeadUnsafe(const uint8_t* data, size_t size) {
+void Buffer::AppendHeadUnsafe(const Byte* data, size_t size) {
   buf_.insert(buf_.begin(), data, data + size);
 }
 
-void Buffer::AppendHead(std::vector<uint8_t>&& other_buffer) {
+void Buffer::AppendHead(ByteData&& other_buffer) {
   buf_.insert(
     buf_.begin(),
     std::make_move_iterator(other_buffer.begin()),
@@ -48,7 +49,7 @@ void Buffer::AppendHead(std::vector<uint8_t>&& other_buffer) {
 
 void Buffer::AppendHead(const std::string& str) {
   std::transform(str.begin(), str.end(), buf_.begin(), [](const char c) {
-    return static_cast<uint8_t>(c);
+    return narrow_cast<Byte>(c);
   });
 }
 
@@ -64,7 +65,7 @@ auto Buffer::FindAndPopTill(const std::string& target)
       buf_.begin(),
       std::next(
         buf_.begin(),
-        static_cast<decltype(buf_)::difference_type>(pos + target.size())));
+        narrow_cast<decltype(buf_)::difference_type>(pos + target.size())));
   }
   return res;
 }

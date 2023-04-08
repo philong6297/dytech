@@ -43,7 +43,7 @@ TEST_CASE("[core/connection]") {
     server_conn.SetCallback([&target = i](Connection*) -> void {
       target += 1;
     });
-    server_conn.GetCallback()();
+    server_conn.Start();
     CHECK(i == 1);
   }
 

@@ -3,14 +3,20 @@
  * @author Yukun J
  * @expectation this header file
  *
+
  *
+
+ * * *
 
 
  * * * should
 
  * * be compatible to compile in C++
- * program on Linux
- *
+ * program on
+ * Linux
+
+
+ * * *
  *
 
  * *
@@ -19,20 +25,29 @@
  *
  * 2022
  *
- * This is a header file implementing
+ * This is a
+ * header file
+
+ * * implementing
  * the
 
  * *
 
  * * CGIer that fork another
  *
- * process
- * to run the cgi
+
+ * * process
+ *
+ * to
+ * run the cgi
  * program
  * commanded
  * by
 
- * * the client through http
+ * * the
+ * client through
+ * http
+ *
  *
  * request in a
 
@@ -46,45 +61,62 @@
 #include <string>
 #include <vector>
 
-#include "core/utils.h"
+#include "base/macros.h"
+#include "core/typedefs.h"
 
 namespace longlp::HTTP {
 
 /**
  * This Cgier runs a client commanded program through traditional
  *
- * 'fork'
+ *
+ *
+
+ * * 'fork'
 
 
 
 
  * * * * * +
- * 'execve' All the cgi program should reside in a
- *
+ * 'execve' All the cgi program should reside in
+ * a
+
+
+ * * *
  * '/cgi-bin'
  *
  * folder
 
    * * in
    * the root
- * directory of the http
+ * directory
+ * of the
+
+ * * http
  *
  * serving directory
  *
  * parent and
 
    * * child
-   * process communicate
+   *
+ * process
+ *
+ * communicate
  *
 
  * * through a file, where
  *
- * child writes the
+ * child writes
+ * the
 
-   * * output to it
+   * *
+ *
+ * output to it
    * and
 
  * * parent read it out
+ *
  *
  *
  * afterwards
@@ -97,7 +129,7 @@ class Cgier {
   explicit Cgier(
     const std::string& path,
     const std::vector<std::string>& arguments) noexcept;
-  [[nodiscard]] auto Run() -> std::vector<uint8_t>;
+  [[nodiscard]] auto Run() -> ByteData;
   [[nodiscard]] auto IsValid() const noexcept -> bool;
   [[nodiscard]] auto GetPath() const noexcept -> std::string;
 

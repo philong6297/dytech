@@ -2,14 +2,20 @@
  * @file http_utils.h
  * @author Yukun J
  * @expectation this header
- * file
+ *
+ *
+
+ * * file
 
 
 
  * * * *
  * should be compatible to compile in C++
  * program on
- * Linux
+
+ * *
+
+ * * Linux
  *
  *
  * @init_date
@@ -17,13 +23,19 @@
 
  * * 10 2023
  *
- * This is a header file
+ * This is a header
+ * file
+
+ * *
  * for http
  * module's
  * constant
  * enum
  *
- * definitions and utility
+ * definitions and
+ * utility
+
+ * *
  *
  * functions
  */
@@ -34,6 +46,8 @@
 #include <map>
 #include <string>
 #include <vector>
+
+#include "core/typedefs.h"
 
 namespace longlp::HTTP {
 
@@ -138,11 +152,14 @@ ExtensionToMime(const Extension& extension) noexcept -> std::string;
 
 /**
  * split a string into many sub strings, splitted by the specified
-   *
+ *
 
 
 
- * *
+
+
+
+ * * * * *
  * * * delimiter
  */
 [[nodiscard]] auto
@@ -168,7 +185,10 @@ Trim(const std::string& str, const char* delim = SPACE) noexcept -> std::string;
 [[nodiscard]] auto ToUpper(std::string str) noexcept -> std::string;
 
 /**
- * Apply Trim + ToUpper to a string and return the formatted version of
+ * Apply Trim + ToUpper to a string and return the formatted version
+ *
+ *
+ * of
 
 
 
@@ -188,7 +208,10 @@ IsDirectoryExists(const std::string& directory_path) noexcept -> bool;
  * Inspect if the request is dynamic CGI
  * hardcode check if contains
 
+
  *
+
+ * * *
 
 
  * * * * the
@@ -209,7 +232,10 @@ IsCgiRequest(const std::string& resource_url) noexcept -> bool;
 
 /**
  * Tell the size of a file in bytes.
- * Assume this file already exists
+ * Assume this file already
+ *
+ *
+ * exists
 
 
 
@@ -221,18 +247,19 @@ IsCgiRequest(const std::string& resource_url) noexcept -> bool;
 CheckFileSize(const std::string& file_path) noexcept -> size_t;
 
 /**
- * Load the file appending to be back of a vector of uint8_t
+ * Load the file appending to be back of a vector of Byte
  *
    *
 
  * *
 
- * * able
+
+
+ * *
+ * * * able
    * to contain binary data
  */
-void LoadFile(
-  const std::string& file_path,
-  std::vector<uint8_t>& buffer) noexcept;
+void LoadFile(const std::string& file_path, ByteData& buffer) noexcept;
 
 }    // namespace longlp::HTTP
 

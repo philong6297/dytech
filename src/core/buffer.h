@@ -2,16 +2,16 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef CORE_BUFFER_H_
-#define CORE_BUFFER_H_
+#ifndef SRC_COREBUFFER_H_
+#define SRC_COREBUFFER_H_
 
-#include <cstddef>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
-#include "core/utils.h"
+#include "base/macros.h"
+#include "core/typedefs.h"
 
 namespace longlp {
 
@@ -29,15 +29,15 @@ class Buffer {
   DISALLOW_MOVE(Buffer);
   DEFAULT_COPY(Buffer);
 
-  void AppendUnsafe(const uint8_t* data, size_t size);
+  void AppendUnsafe(const Byte* data, size_t size);
 
   void Append(const std::string& str);
 
-  void Append(std::vector<uint8_t>&& other_buffer);
+  void Append(ByteData&& other_buffer);
 
-  void AppendHeadUnsafe(const uint8_t* data, size_t size);
+  void AppendHeadUnsafe(const Byte* data, size_t size);
 
-  void AppendHead(std::vector<uint8_t>&& other_buffer);
+  void AppendHead(ByteData&& other_buffer);
 
   void AppendHead(const std::string& str);
 
@@ -50,15 +50,15 @@ class Buffer {
     return buf_.capacity();
   }
 
-  [[nodiscard]] auto Data() noexcept -> const uint8_t* { return buf_.data(); }
+  [[nodiscard]] auto Data() noexcept -> const Byte* { return buf_.data(); }
 
   void Clear() noexcept { buf_.clear(); }
 
   [[nodiscard]] auto ToStringView() const noexcept -> std::string_view;
 
  private:
-  std::vector<uint8_t> buf_;
+  ByteData buf_;
 };
 
 }    // namespace longlp
-#endif    // CORE_BUFFER_H_
+#endif    // SRC_COREBUFFER_H_
