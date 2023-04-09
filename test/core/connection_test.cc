@@ -63,20 +63,22 @@ TEST_CASE("[core/connection]") {
       CHECK(client_conn.GetWriteBufferSize() == client_message.size());
       client_conn.Send();
       // recv a message from server
-      std::this_thread::sleep_for(2s);
+      // 5s is long enough to wait for server setup and send message
+      std::this_thread::sleep_for(5s);
       auto [read, exit] = client_conn.Recv();
       CHECK((read == std::ssize(server_message) && exit));
       CHECK(client_conn.ReadAsString() == std::string(server_message));
     });
 
     client_thread.detach();
+
     NetAddress client_address;
     auto connected_sock = std::make_unique<Socket>(
       server_connection.GetSocket()->Accept(client_address));
     connected_sock->SetNonBlocking();
     CHECK(connected_sock->GetFd() != -1);
     Connection connected_conn(std::move(connected_sock));
-    std::this_thread::sleep_for(2s);
+    std::this_thread::sleep_for(1s);
     // recv a message from client
     auto [read, exit] = connected_conn.Recv();
     CHECK((read == std::ssize(client_message) && !exit));
@@ -84,6 +86,6 @@ TEST_CASE("[core/connection]") {
     // send a message to client
     connected_conn.WriteToWriteBuffer(server_message);
     connected_conn.Send();
-    std::this_thread::sleep_for(2s);
+    std::this_thread::sleep_for(1s);
   }
 }

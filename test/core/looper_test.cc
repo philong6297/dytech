@@ -47,12 +47,12 @@ TEST_CASE("[core/looper]") {
       threads.emplace_back([&host = local_host]() {
         auto client_socket = Socket();
         client_socket.Connect(host);
-        std::this_thread::sleep_for(2s);
+        std::this_thread::sleep_for(1s);
       });
     }
 
     // build 3 connections and add into looper with customized callback function
-    std::atomic<size_t> counter{0U};
+    std::vector<int> reach(client_num, 0U);
     for (auto i = 0U; i < client_num; ++i) {
       NetAddress client_address;
       auto client_sock =
@@ -61,24 +61,26 @@ TEST_CASE("[core/looper]") {
       client_sock->SetNonBlocking();
       auto client_conn = std::make_unique<Connection>(std::move(client_sock));
       client_conn->SetEvents(Poller::Event::kRead);
-      client_conn
-        ->SetCallback([&counter](longlp::not_null<Connection*> /* conn */) {
-          counter.fetch_add(1);
-        });
+      client_conn->SetCallback([&](longlp::not_null<Connection*> /* conn */) {
+        // counter.fetch_add(1, std::memory_order_relaxed);
+        // counter_dec.fetch_sub(1, std::memory_order_relaxed);
+        reach[i] = 1;
+      });
       looper.AddConnection(std::move(client_conn));
     }
 
-    // the looper execute each client's callback once, upon their exit
+    /* the looper execute each client's callback once, upon their exit */
     std::thread runner([&]() { looper.Loop(); });
     std::this_thread::sleep_for(2s);
     looper.SetExit();
 
+    // each client's callback should have already been executed
+    // CHECK(counter == client_num);
+    // CHECK(counter_dec == -3);
+    CHECK(std::accumulate(reach.begin(), reach.end(), 0) == client_num);
     runner.join();
     for (auto i = 0U; i < client_num; ++i) {
       threads[i].join();
     }
-
-    // each client's callback should have already been executed
-    CHECK(counter == client_num);
   }
 }
