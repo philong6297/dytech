@@ -5,8 +5,9 @@
 #include "core/net_address.h"
 
 #include <fmt/format.h>
-#include <array>
 #include <cstring>
+
+#include "core/typedefs.h"
 
 namespace longlp {
 
@@ -41,7 +42,8 @@ NetAddress::
 
 auto NetAddress::GetIp() const noexcept -> std::string {
   // long enough for both Ipv4 and Ipv6
-  std::string ip_address(INET6_ADDRSTRLEN, 0);
+  FixedByteArray<INET6_ADDRSTRLEN> ip_address{};
+  ip_address.fill(0);
 
   switch (protocol_) {
     case Protocol::Ipv4:
@@ -50,7 +52,7 @@ auto NetAddress::GetIp() const noexcept -> std::string {
         inet_ntop(
           AF_INET,
           &as_ipv4->sin_addr,
-          ip_address.data(),
+          bit_cast<char*>(ip_address.data()),
           INET_ADDRSTRLEN);
       }
       break;
@@ -60,25 +62,28 @@ auto NetAddress::GetIp() const noexcept -> std::string {
         inet_ntop(
           AF_INET6,
           &as_ipv6->sin6_addr,
-          ip_address.data(),
+          bit_cast<char*>(ip_address.data()),
           INET6_ADDRSTRLEN);
       }
       break;
   }
 
-  return ip_address;
+  return bit_cast<char*>(ip_address.data());
 }
 
 auto NetAddress::GetPort() const noexcept -> uint16_t {
-  if (protocol_ == Protocol::Ipv4) {
-    const auto* as_ipv4 = bit_cast<const sockaddr_in*>(&address_data_);
-    return ntohs(as_ipv4->sin_port);
+  switch (protocol_) {
+    case Protocol::Ipv4:
+      {
+        const auto* as_ipv4 = bit_cast<const sockaddr_in*>(&address_data_);
+        return ntohs(as_ipv4->sin_port);
+      }
+    case Protocol::Ipv6:
+      {
+        const auto* as_ipv6 = bit_cast<const sockaddr_in6*>(&address_data_);
+        return ntohs(as_ipv6->sin6_port);
+      }
   }
-
-  // IP v6
-
-  const auto* as_ipv6 = bit_cast<const sockaddr_in6*>(&address_data_);
-  return ntohs(as_ipv6->sin6_port);
 }
 
 auto NetAddress::ToString() const noexcept -> std::string {

@@ -61,22 +61,24 @@ TEST_CASE("[core/looper]") {
       client_sock->SetNonBlocking();
       auto client_conn = std::make_unique<Connection>(std::move(client_sock));
       client_conn->SetEvents(Poller::Event::kRead);
-      client_conn->SetCallback(
-        [&counter](longlp::not_null<Connection*> /* conn */) { ++counter; });
+      client_conn
+        ->SetCallback([&counter](longlp::not_null<Connection*> /* conn */) {
+          counter.fetch_add(1);
+        });
       looper.AddConnection(std::move(client_conn));
     }
 
-    /* the looper execute each client's callback once, upon their exit */
+    // the looper execute each client's callback once, upon their exit
     std::thread runner([&]() { looper.Loop(); });
     std::this_thread::sleep_for(2s);
     looper.SetExit();
-
-    /* each client's callback should have already been executed */
-    CHECK(counter == client_num);
 
     runner.join();
     for (auto i = 0U; i < client_num; ++i) {
       threads[i].join();
     }
+
+    // each client's callback should have already been executed
+    CHECK(counter == client_num);
   }
 }

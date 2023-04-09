@@ -36,8 +36,10 @@ TEST_CASE("[core/buffer]") {
     }
 
     buf.AppendUnsafe(buff_1.data(), buff_1.size());
-    buf.AppendHeadUnsafe(buff_2.data(), buff_2.size());
     CHECK(buf.ToStringView() == msg1);
+    buf.AppendHeadUnsafe(buff_2.data(), buff_2.size());
+    const auto together = std::string(msg2) + std::string(msg1);
+    CHECK(buf.ToStringView() == together);
     buf.Clear();
     CHECK(buf.Size() == 0);
   }
@@ -46,6 +48,7 @@ TEST_CASE("[core/buffer]") {
     const std::string msg1 = "Greeting from beginning!";
     const std::string msg2 = "Farewell from end~";
     buf.AppendHead(msg1);
+    CHECK(buf.ToStringView() == msg1);
     buf.Append(msg2);
     const std::string together = msg1 + msg2;
     CHECK(buf.ToStringView() == together);

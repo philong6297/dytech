@@ -21,11 +21,7 @@ void Buffer::AppendUnsafe(const Byte* data, size_t size) {
 }
 
 void Buffer::Append(const std::string& str) {
-  std::transform(
-    str.begin(),
-    str.end(),
-    std::back_inserter(buf_),
-    [](const char c) { return narrow_cast<Byte>(c); });
+  AppendUnsafe(bit_cast<const Byte*>(str.c_str()), str.size());
 }
 
 void Buffer::Append(DynamicByteArray&& other_buffer) {
@@ -47,9 +43,7 @@ void Buffer::AppendHead(DynamicByteArray&& other_buffer) {
 }
 
 void Buffer::AppendHead(const std::string& str) {
-  std::transform(str.begin(), str.end(), buf_.begin(), [](const char c) {
-    return narrow_cast<Byte>(c);
-  });
+  AppendHeadUnsafe(bit_cast<const Byte*>(str.c_str()), str.size());
 }
 
 auto Buffer::FindAndPopTill(const std::string& target)
