@@ -65,7 +65,7 @@ void Connection::WriteToWriteBuffer(const std::string& str) {
   write_buffer_->Append(str);
 }
 
-void Connection::WriteToWriteBuffer(ByteData&& other_buf) {
+void Connection::WriteToWriteBuffer(DynamicByteArray&& other_buf) {
   write_buffer_->Append(std::move(other_buf));
 }
 
@@ -81,7 +81,7 @@ auto Connection::ReadAsString() const noexcept -> std::string {
 auto Connection::Recv() -> std::pair<ssize_t, bool> {
   // read all available bytes, since Edge-trigger
   ssize_t read = 0;
-  std::array<Byte, kBufferSize + 1> buf{};
+  FixedByteArray<kBufferSize + 1> buf{};
   buf.fill(0);
 
   while (true) {

@@ -15,7 +15,7 @@ set(CORE_TARGETS
 )
 foreach(target ${CORE_TARGETS})
   add_executable(${target} core/${target}.cc)
-  target_link_libraries(${target} PRIVATE core Catch2::Catch2WithMain)
+  target_link_libraries(${target} PRIVATE core Catch2::Catch2WithMain fmt::fmt)
   target_compile_options(${target} PRIVATE ${LONGLP_DESIRED_COMPILE_OPTIONS})
   target_include_directories(${target} PRIVATE ${LONGLP_PROJECT_SRC_DIR})
   catch_discover_tests(${target})

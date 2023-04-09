@@ -22,7 +22,7 @@ NetAddress::
   switch (protocol_) {
     case Protocol::Ipv4:
       {
-        auto* as_ipv4       = std::bit_cast<sockaddr_in*>(&address_data_);
+        auto* as_ipv4       = bit_cast<sockaddr_in*>(&address_data_);
         as_ipv4->sin_family = AF_INET;
         inet_pton(AF_INET, ip.data(), &as_ipv4->sin_addr.s_addr);
         as_ipv4->sin_port = htons(port);
@@ -30,7 +30,7 @@ NetAddress::
       break;
     case Protocol::Ipv6:
       {
-        auto* as_ipv6        = std::bit_cast<sockaddr_in6*>(&address_data_);
+        auto* as_ipv6        = bit_cast<sockaddr_in6*>(&address_data_);
         as_ipv6->sin6_family = AF_INET6;
         inet_pton(AF_INET6, ip.data(), &as_ipv6->sin6_addr.s6_addr);
         as_ipv6->sin6_port = htons(port);
@@ -46,7 +46,7 @@ auto NetAddress::GetIp() const noexcept -> std::string {
   switch (protocol_) {
     case Protocol::Ipv4:
       {
-        const auto* as_ipv4 = std::bit_cast<const sockaddr_in*>(&address_data_);
+        const auto* as_ipv4 = bit_cast<const sockaddr_in*>(&address_data_);
         inet_ntop(
           AF_INET,
           &as_ipv4->sin_addr,
@@ -56,8 +56,7 @@ auto NetAddress::GetIp() const noexcept -> std::string {
       break;
     case Protocol::Ipv6:
       {
-        const auto* as_ipv6 =
-          std::bit_cast<const sockaddr_in6*>(&address_data_);
+        const auto* as_ipv6 = bit_cast<const sockaddr_in6*>(&address_data_);
         inet_ntop(
           AF_INET6,
           &as_ipv6->sin6_addr,
@@ -72,13 +71,13 @@ auto NetAddress::GetIp() const noexcept -> std::string {
 
 auto NetAddress::GetPort() const noexcept -> uint16_t {
   if (protocol_ == Protocol::Ipv4) {
-    const auto* as_ipv4 = std::bit_cast<const sockaddr_in*>(&address_data_);
+    const auto* as_ipv4 = bit_cast<const sockaddr_in*>(&address_data_);
     return ntohs(as_ipv4->sin_port);
   }
 
   // IP v6
 
-  const auto* as_ipv6 = std::bit_cast<const sockaddr_in6*>(&address_data_);
+  const auto* as_ipv6 = bit_cast<const sockaddr_in6*>(&address_data_);
   return ntohs(as_ipv6->sin6_port);
 }
 

@@ -28,7 +28,7 @@ void Buffer::Append(const std::string& str) {
     [](const char c) { return narrow_cast<Byte>(c); });
 }
 
-void Buffer::Append(DynamicByteArray&& other_buffer) {
+void Buffer::Append(ByteData&& other_buffer) {
   buf_.insert(
     buf_.end(),
     std::make_move_iterator(other_buffer.begin()),
@@ -39,7 +39,7 @@ void Buffer::AppendHeadUnsafe(const Byte* data, size_t size) {
   buf_.insert(buf_.begin(), data, data + size);
 }
 
-void Buffer::AppendHead(DynamicByteArray&& other_buffer) {
+void Buffer::AppendHead(ByteData&& other_buffer) {
   buf_.insert(
     buf_.begin(),
     std::make_move_iterator(other_buffer.begin()),

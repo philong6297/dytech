@@ -4,10 +4,11 @@
 
 #include "core/acceptor.h"
 
-#include <unistd.h>
-
+#include <chrono>
 #include <future>
 #include <memory>
+#include <string_view>
+#include <thread>
 #include <vector>
 
 #include <catch2/catch_test_macros.hpp>
@@ -20,6 +21,7 @@
 #include "core/socket.h"
 #include "core/thread_pool.h"
 
+namespace {
 using longlp::Acceptor;
 using longlp::Connection;
 using longlp::DistributionAgent;
@@ -29,22 +31,20 @@ using longlp::not_null;
 using longlp::Protocol;
 using longlp::Socket;
 using longlp::ThreadPool;
+using namespace std::chrono_literals;
+}    // namespace
 
 TEST_CASE("[core/acceptor]") {
   NetAddress local_host("127.0.0.1", 20080, Protocol::Ipv4);
 
-  ThreadPool pool;
+  ThreadPool pool(std::thread::hardware_concurrency());
 
   // built an acceptor will one listener looper and one reactor together
   auto single_reactor = std::make_unique<Looper>();
+  auto single_looper  = std::make_unique<Looper>();
+  auto agent          = std::make_unique<DistributionAgent>();
+  agent->AddCandidate(single_looper.get());
 
-  std::vector<std::unique_ptr<Looper>> reactors;
-  reactors.emplace_back(std::make_unique<Looper>());
-
-  auto agent = std::make_unique<DistributionAgent>();
-  for (auto& reactor : reactors) {
-    agent->AddCandidate(reactor.get());
-  }
   Acceptor acceptor(single_reactor.get(), agent.get(), local_host);
 
   REQUIRE(acceptor.GetAcceptorConnection()->GetFd() != -1);
@@ -52,23 +52,23 @@ TEST_CASE("[core/acceptor]") {
   SECTION(
     "Acceptor should be able to accept new clients and set callback for "
     "them") {
-    int client_num                  = 3;
-    std::atomic<int> accept_trigger = 0;
-    std::atomic<int> handle_trigger = 0;
+    static constexpr auto kClientNum           = 3U;
+    static constexpr std::string_view kMessage = "Hello from client!";
+    std::atomic<size_t> accept_trigger         = 0;
+    std::atomic<size_t> handle_trigger         = 0;
 
     // set acceptor customize functions
-    acceptor.SetOnAccept([&](not_null<Connection*>) { accept_trigger++; });
-    acceptor.SetOnHandle([&](not_null<Connection*>) { handle_trigger++; });
+    acceptor.SetOnAccept([&](not_null<Connection*>) { ++accept_trigger; });
+    acceptor.SetOnHandle([&](not_null<Connection*>) { ++handle_trigger; });
 
     // start three clients and connect with server
-    const char* msg = "Hello from client!";
     std::vector<std::future<void>> futs;
-    for (int i = 0; i < client_num; i++) {
+    for (auto i = 0U; i < kClientNum; ++i) {
       auto fut = std::async(std::launch::async, [&]() {
         Socket client_sock;
         client_sock.Connect(local_host);
         CHECK(client_sock.GetFd() != -1);
-        send(client_sock.GetFd(), msg, strlen(msg), 0);
+        send(client_sock.GetFd(), kMessage.data(), kMessage.size(), 0);
       });
       futs.push_back(std::move(fut));
     }
@@ -77,12 +77,12 @@ TEST_CASE("[core/acceptor]") {
       single_reactor->Loop();
     });
     futs.push_back(std::move(runner));
-    sleep(2);
+    std::this_thread::sleep_for(2s);
     single_reactor->SetExit();    // terminate the looper
 
     // accept & handle should be triggered exactly 3 times
-    CHECK(accept_trigger == client_num);
-    CHECK(handle_trigger >= client_num);
+    CHECK(accept_trigger == kClientNum);
+    CHECK(handle_trigger >= kClientNum);
 
     for (auto& f : futs) {
       f.wait();

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef SRC_CORECONNECTION_H_
-#define SRC_CORECONNECTION_H_
+#ifndef SRC_CORE_CONNECTION_H_
+#define SRC_CORE_CONNECTION_H_
 
 #include <memory>
 #include <optional>
@@ -61,7 +61,7 @@ class Connection {
   void WriteToWriteBuffer(const Byte* buf, size_t size);
   void WriteToReadBuffer(const std::string& str);
   void WriteToWriteBuffer(const std::string& str);
-  void WriteToWriteBuffer(ByteData&& other_buf);
+  void WriteToWriteBuffer(DynamicByteArray&& other_buf);
 
   [[nodiscard]] auto Read() const noexcept -> const Byte*;
   [[nodiscard]] auto ReadAsString() const noexcept -> std::string;
@@ -87,4 +87,4 @@ class Connection {
 };
 
 }    // namespace longlp
-#endif    // SRC_CORECONNECTION_H_
+#endif    // SRC_CORE_CONNECTION_H_

@@ -5,10 +5,14 @@
  *
  *
  *
+ *
+ *
  * implementation
  * file should be compatible to compile in C++
  * program
- * on
+ *
+
+ * * on
 
 
  * * * Linux
@@ -16,6 +20,8 @@
  * Jan 10 2023
  *
  * This is an
+ *
+ *
  * implementation file
 
  * *
@@ -85,7 +91,7 @@ Response::Response(
   }
 }
 
-void Response::Serialize(ByteData& buffer) {
+void Response::Serialize(DynamicByteArray& buffer) {
   // construct everything before body
   std::stringstream str_stream;
   str_stream << status_line_ << CRLF;

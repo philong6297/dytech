@@ -2,8 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef SRC_CORECACHE_H_
-#define SRC_CORECACHE_H_
+#ifndef SRC_CORE_CACHE_H_
+#define SRC_CORE_CACHE_H_
 
 #include <memory>
 #include <mutex>
@@ -41,10 +41,12 @@ class Cache {
   }
 
   [[nodiscard]] auto
-  TryLoad(const std::string& resource_url, ByteData& destination) -> bool;
+  TryLoad(const std::string& resource_url, DynamicByteArray& destination)
+    -> bool;
 
   [[nodiscard]] auto
-  TryInsert(const std::string& resource_url, const ByteData& source) -> bool;
+  TryInsert(const std::string& resource_url, const DynamicByteArray& source)
+    -> bool;
 
   void Clear();
 
@@ -71,4 +73,4 @@ class Cache {
 
 }    // namespace longlp
 
-#endif    // SRC_CORECACHE_H_
+#endif    // SRC_CORE_CACHE_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef SRC_COREBUFFER_H_
-#define SRC_COREBUFFER_H_
+#ifndef SRC_CORE_BUFFER_H_
+#define SRC_CORE_BUFFER_H_
 
 #include <optional>
 #include <string>
@@ -33,11 +33,11 @@ class Buffer {
 
   void Append(const std::string& str);
 
-  void Append(ByteData&& other_buffer);
+  void Append(DynamicByteArray&& other_buffer);
 
   void AppendHeadUnsafe(const Byte* data, size_t size);
 
-  void AppendHead(ByteData&& other_buffer);
+  void AppendHead(DynamicByteArray&& other_buffer);
 
   void AppendHead(const std::string& str);
 
@@ -57,8 +57,8 @@ class Buffer {
   [[nodiscard]] auto ToStringView() const noexcept -> std::string_view;
 
  private:
-  ByteData buf_;
+  DynamicByteArray buf_;
 };
 
 }    // namespace longlp
-#endif    // SRC_COREBUFFER_H_
+#endif    // SRC_CORE_BUFFER_H_

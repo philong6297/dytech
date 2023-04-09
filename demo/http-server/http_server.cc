@@ -1,69 +1,10 @@
-/**
- * @file http_server.cpp
- * @author Yukun J
- * @expectation this is
- *
-
-
- * *
-
-
- * * * *
-
-
-
- * * * *
- * the
-
-
-
-
-
- * * * *
- * *
-
- * * *
-
-
- * * * http
- *
- * server
-
- * * for
-
-
- * * *
- * illustration
-
- * * and
-
-
- * * * test
- *
- * purpose
-
- * *
-
- *
- * *
-
- * *
- *
- * @init_date
-
-
- * *
- * * Jan
- * 3
- *
- *
- *
- * 2023
-
- */
+// Copyright 2023 Phi-Long Le. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #include <system_error>
-#include "core/turtle_server.h"
+
+#include "core/server.h"
 #include "http/cgier.h"
 #include "http/header.h"
 #include "http/http_utils.h"
@@ -94,7 +35,7 @@ void ProcessHttpRequest(
     client_conn->FindAndPopTill("\r\n\r\n");
   while (request_op != std::nullopt) {
     Request request{request_op.value()};
-    ByteData response_buf;
+    DynamicByteArray response_buf;
     if (!request.IsValid()) {
       auto response = Response::Make400Response();
       no_more_parse = true;
@@ -146,7 +87,7 @@ void ProcessHttpRequest(
             Make200Response(request.ShouldClose(), resource_full_path);
           response.Serialize(response_buf);
           no_more_parse = request.ShouldClose();
-          ByteData cache_buf;
+          DynamicByteArray cache_buf;
           if (request.GetMethod() == Method::GET) {
             // only concern about carrying content when GET request
             bool resource_cached =

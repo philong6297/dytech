@@ -5,27 +5,29 @@
 #include "core/socket.h"
 
 #include <fcntl.h>
-
 #include <thread>
 
 #include <catch2/catch_test_macros.hpp>
+
 #include "core/net_address.h"
 
+namespace {
 using longlp::NetAddress;
 using longlp::Protocol;
 using longlp::Socket;
+}    // namespace
 
 TEST_CASE("[core/socket]") {
   NetAddress local_host("127.0.0.1", 20080, Protocol::Ipv4);
   Socket server_sock;
 
   // build the server socket
-  server_sock.Bind(local_host);
+  server_sock.Bind(local_host, true);
   REQUIRE(server_sock.GetFd() != -1);
   server_sock.Listen();
 
   SECTION("move operations will switch fd") {
-    int orig_fd = server_sock.GetFd();
+    const auto orig_fd = server_sock.GetFd();
     Socket another_sock(123);
     server_sock = std::move(another_sock);
     CHECK(server_sock.GetFd() == 123);
@@ -38,7 +40,7 @@ TEST_CASE("[core/socket]") {
 
   SECTION("non-blocking mode setting for socket") {
     Socket sock;
-    sock.Bind(local_host);
+    sock.Bind(local_host, true);
     CHECK((sock.GetAttrs() & O_NONBLOCK) == 0);
     sock.SetNonBlocking();
     CHECK((sock.GetAttrs() & O_NONBLOCK) != 0);

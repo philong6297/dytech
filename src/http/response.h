@@ -4,15 +4,19 @@
  * @expectation this header file
 
 
- *
+
+
+ * * *
  * *
 
  * * *
 
 
  * * * should be compatible to compile in C++
- * program on
- *
+ * program
+ * on
+
+ * *
  * Linux
  *
 
@@ -23,7 +27,9 @@
 
  * * 31 2022
  *
- * This is a header
+ * This
+ * is a
+ * header
 
  * * file
  * implementing
@@ -49,6 +55,8 @@ class Header;
 /**
  * The HTTP Response class
  * use vector of char to be able to
+ *
+ *
  * contain
 
 
@@ -78,7 +86,7 @@ class Response {
     std::optional<std::string> resource_url);
 
   /* no content, content should separately be loaded */
-  void Serialize(ByteData& buffer);
+  void Serialize(DynamicByteArray& buffer);
 
   [[nodiscard]] auto GetHeaders() -> std::vector<Header>;
 
@@ -91,7 +99,7 @@ class Response {
   bool should_close_;
   std::vector<Header> headers_;
   std::optional<std::string> resource_url_;
-  ByteData body_;
+  DynamicByteArray body_;
 };
 
 }    // namespace longlp::HTTP

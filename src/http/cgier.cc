@@ -2,14 +2,22 @@
  * @file cgier.cpp
  * @author Yukun J
  * @expectation this header file
+
  *
+
+
+ * * * *
 
 
 
  * * * *
  * should be compatible to compile in C++
- * program on Linux
+ * program on
  *
+ * Linux
+
+
+ * * *
  *
  *
  * @init_date
@@ -17,23 +25,36 @@
 
  * * 13 2023
  *
- * This is an implementation file
+ * This is an
+ *
+ * implementation
+
+ * * file
  *
  *
  * implementing the CGIer
  * that
  *
- * forks another
- * process to run the
+ *
+ * forks
+ * another
+ *
+ * process
+ * to run the
  * cgi
 
- * * program commanded by the
+ * * program commanded
+ * by the
+ *
  * client
  *
- * through http request
+ *
+ * through http
+ * request
  * in
  * a
  * RESTful
+ *
  * style
  */
 
@@ -41,7 +62,6 @@
 
 #include <fcntl.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
 #include <cassert>
 #include <cstdio>
@@ -80,9 +100,9 @@ Cgier::Cgier(
   cgi_arguments_(arguments),
   valid_(true) {}
 
-auto Cgier::Run() -> ByteData {
+auto Cgier::Run() -> DynamicByteArray {
   assert(valid_);
-  ByteData cgi_result;
+  DynamicByteArray cgi_result;
   // unique shared filename within one Cgier
   // when communicating between parent and child
   std::stringstream ssr;
@@ -149,7 +169,7 @@ auto Cgier::BuildArgumentList() -> char** {
   char** cgi_argv = (char**)calloc(cgi_arguments_.size() + 2, sizeof(char*));
   cgi_argv[0]     = (char*)calloc(cgi_program_path_.size() + 1, sizeof(char));
   memcpy(cgi_argv[0], cgi_program_path_.c_str(), cgi_program_path_.size());
-  for (size_t i = 0; i < cgi_arguments_.size(); i++) {
+  for (size_t i = 0; i < cgi_arguments_.size(); ++i) {
     cgi_argv[i + 1] = (char*)calloc(cgi_arguments_[i].size() + 1, sizeof(char));
     memcpy(
       cgi_argv[i + 1],
@@ -162,7 +182,7 @@ auto Cgier::BuildArgumentList() -> char** {
 }
 
 void Cgier::FreeArgumentList(char** arg_list) {
-  for (int i = 0; i < static_cast<int>(cgi_arguments_.size()) + 2; i++) {
+  for (int i = 0; i < static_cast<int>(cgi_arguments_.size()) + 2; ++i) {
     free(arg_list[i]);
   }
   free(arg_list);

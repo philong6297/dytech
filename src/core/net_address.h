@@ -2,15 +2,16 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef SRC_CORENET_ADDRESS_H_
-#define SRC_CORENET_ADDRESS_H_
+#ifndef SRC_CORE_NET_ADDRESS_H_
+#define SRC_CORE_NET_ADDRESS_H_
 
 #include <arpa/inet.h>
 
-#include <bit>
 #include <iostream>
 #include <string>
 #include <string_view>
+
+#include "base/utils.h"
 
 namespace longlp {
 
@@ -34,7 +35,7 @@ class NetAddress {
   }
 
   [[nodiscard]] auto address_data() const -> const sockaddr* {
-    return std::bit_cast<const sockaddr*>(&address_data_);
+    return bit_cast<const sockaddr*>(&address_data_);
   }
 
   [[nodiscard]] auto address_data_length() const -> const socklen_t* {
@@ -42,7 +43,7 @@ class NetAddress {
   }
 
   [[nodiscard]] auto address_data() -> sockaddr* {
-    return std::bit_cast<sockaddr*>(&address_data_);
+    return bit_cast<sockaddr*>(&address_data_);
   }
 
   [[nodiscard]] auto address_data_length() -> socklen_t* {
@@ -67,4 +68,4 @@ class NetAddress {
 operator<<(std::ostream& os, const NetAddress& address) -> std::ostream&;
 
 }    // namespace longlp
-#endif    // SRC_CORENET_ADDRESS_H_
+#endif    // SRC_CORE_NET_ADDRESS_H_

@@ -18,13 +18,13 @@ class Cache::CacheNode {
  public:
   CacheNode() noexcept { UpdateTimestamp(); }
 
-  CacheNode(std::string identifier, const ByteData& data) :
+  CacheNode(std::string identifier, const DynamicByteArray& data) :
     identifier_(std::move(identifier)),
     data_(data) {
     UpdateTimestamp();
   }
 
-  void Serialize(ByteData& destination) {
+  void Serialize(DynamicByteArray& destination) {
     if (const auto new_cap = destination.size() + data_.size();
         destination.capacity() < new_cap) {
       destination.reserve(new_cap);
@@ -45,7 +45,7 @@ class Cache::CacheNode {
   // the resource identifier for this node
   std::string identifier_;
   // may contain binary data
-  ByteData data_;
+  DynamicByteArray data_;
   // the timestamp of last access in milliseconds
   int64_t last_access_{0};
   CacheNode* prev_{nullptr};
@@ -62,8 +62,9 @@ Cache::Cache(size_t capacity) noexcept :
 
 Cache::~Cache() = default;
 
-auto Cache::TryLoad(const std::string& resource_url, ByteData& destination)
-  -> bool {
+auto Cache::TryLoad(
+  const std::string& resource_url,
+  DynamicByteArray& destination) -> bool {
   // TODO(longlp): Why do we use shared here
   std::shared_lock<std::shared_mutex> lock(mtx_);
   auto iter = mapping_.find(resource_url);
@@ -78,8 +79,9 @@ auto Cache::TryLoad(const std::string& resource_url, ByteData& destination)
   return false;
 }
 
-auto Cache::TryInsert(const std::string& resource_url, const ByteData& source)
-  -> bool {
+auto Cache::TryInsert(
+  const std::string& resource_url,
+  const DynamicByteArray& source) -> bool {
   // TODO(longlp): Why do we use unique here
   std::unique_lock<std::shared_mutex> lock(mtx_);
 

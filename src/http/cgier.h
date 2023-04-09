@@ -4,7 +4,9 @@
  * @expectation this header file
  *
 
+
  *
+ * *
 
  * * *
 
@@ -12,7 +14,9 @@
  * * * should
 
  * * be compatible to compile in C++
- * program on
+ * program
+ *
+ * on
  * Linux
 
 
@@ -25,7 +29,9 @@
  *
  * 2022
  *
- * This is a
+ * This
+
+ * * is a
  * header file
 
  * * implementing
@@ -33,7 +39,9 @@
 
  * *
 
- * * CGIer that fork another
+ * * CGIer that fork
+
+ * * another
  *
 
  * * process
@@ -42,6 +50,8 @@
  * run the cgi
  * program
  * commanded
+
+ * *
  * by
 
  * * the
@@ -51,7 +61,9 @@
  *
  * request in a
 
- * * RESTful
+ * *
+ * RESTful
+ *
  * style
  */
 
@@ -70,16 +82,20 @@ namespace longlp::HTTP {
  * This Cgier runs a client commanded program through traditional
  *
  *
- *
 
- * * 'fork'
+ * *
+
+
+ * * * 'fork'
 
 
 
 
  * * * * * +
- * 'execve' All the cgi program should reside in
- * a
+ * 'execve' All the cgi program should
+ * reside in
+
+ * * a
 
 
  * * *
@@ -88,7 +104,9 @@ namespace longlp::HTTP {
  * folder
 
    * * in
-   * the root
+   * the
+ * root
+ *
  * directory
  * of the
 
@@ -96,26 +114,32 @@ namespace longlp::HTTP {
  *
  * serving directory
  *
+ *
  * parent and
 
-   * * child
+   *
+ * * child
    *
  * process
  *
  * communicate
  *
 
- * * through a file, where
+ * *
+ * through a file, where
  *
- * child writes
+
+ * * child writes
  * the
 
    * *
  *
- * output to it
+ * output to
+ * it
    * and
 
- * * parent read it out
+ * * parent read
+ * it out
  *
  *
  *
@@ -129,7 +153,7 @@ class Cgier {
   explicit Cgier(
     const std::string& path,
     const std::vector<std::string>& arguments) noexcept;
-  [[nodiscard]] auto Run() -> ByteData;
+  [[nodiscard]] auto Run() -> DynamicByteArray;
   [[nodiscard]] auto IsValid() const noexcept -> bool;
   [[nodiscard]] auto GetPath() const noexcept -> std::string;
 

@@ -3,14 +3,20 @@
  * @author Yukun J
  * @expectation this
  *
+ *
+ *
  * implementation file should be compatible to compile in C++
  * program on
  *
- * Linux
+
+
+ * * * Linux
  * @init_date Feb 1 2023
  *
  * This is the unit test file for
  *
+
+ * *
  * http/Request class
  */
 
@@ -20,7 +26,6 @@
 #include "http/header.h"
 #include "http/http_utils.h"
 
-/* for convenience reason */
 using longlp::HTTP::Method;
 using longlp::HTTP::Request;
 using longlp::HTTP::Version;

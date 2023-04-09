@@ -2,8 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef SRC_COREPOLLER_H_
-#define SRC_COREPOLLER_H_
+#ifndef SRC_CORE_POLLER_H_
+#define SRC_CORE_POLLER_H_
 
 #include <sys/epoll.h>
 
@@ -49,4 +49,4 @@ class Poller {
   std::vector<epoll_event> poll_events_{};
 };
 }    // namespace longlp
-#endif    // SRC_COREPOLLER_H_
+#endif    // SRC_CORE_POLLER_H_

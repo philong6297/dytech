@@ -1,48 +1,10 @@
-/**
- * @file thread_pool.h
- * @author Yukun J
- * @expectation this header
- *
+// Copyright 2023 Phi-Long Le. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
- *
- * *
+#ifndef SRC_CORE_THREAD_POOL_H_
+#define SRC_CORE_THREAD_POOL_H_
 
- * * file
-
-
- * * * should be compatible to compile in C++
- * program on
- *
- * Linux
-
- * *
-
-
- * * * @init_date
-
- * * Dec
- * 26 2022
- *
- * This is a header
-
- * * file
- * implementing
-
- * * the
- * ThreadPool for
-
- * *
- * maintaining and
-
- * * serving
- *
- * the concurrent
- *
- * client
- * requests
- */
-
-#include <algorithm>
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -50,85 +12,68 @@
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <stdexcept>
 #include <thread>
-#include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#ifndef SRC_CORETHREAD_POOL_H_
-#  define SRC_CORETHREAD_POOL_H_
 
 namespace longlp {
 
-/* The minimum number of threads to exist in the threadpool */
-static constexpr int MIN_NUM_THREADS_IN_POOL = 2;
-
-/**
- * This ThreadPool manages the thread resources and acts as the
- *
- *
- *
- * executor
-
-
-
-
- * * * * * for
- * client requests upon submitting a task, it
-
- * *
-
- * * gives back a
- * future
-
- * * to
-   * be
-   * waited
- * for
- * */
 class ThreadPool {
  public:
-  // save one thread for the main
-  explicit ThreadPool(int size = std::thread::hardware_concurrency() - 1);
+  explicit ThreadPool(size_t thread_count);
 
+  DISALLOW_COPY_AND_MOVE(ThreadPool);
   ~ThreadPool();
 
-  DISALLOW_COPY(ThreadPool);
+  // add new work item to the pool
+  template <class F, class... Args>
+  auto SubmitTask(F&& new_task, Args&&... args)
+    -> std::future<std::invoke_result_t<F, Args...>>;
 
-  template <typename F, typename... Args>
-  decltype(auto) SubmitTask(F&& new_task, Args&&... args);
-
-  void Exit();
-
-  [[nodiscard]] auto GetSize() -> size_t;
+  auto GetSize() -> size_t { return workers_.size(); }
 
  private:
-  std::vector<std::thread> threads_;
-  std::queue<std::function<void()>> tasks_;
-  std::mutex mtx_;
-  std::condition_variable cv_;
-  std::atomic<bool> exit_{false};
+  // need to keep track of threads so we can join them
+  std::vector<std::thread> workers_;
+  std::queue<std::function<void()>> tasks_queue_;
+
+  // synchronization
+  std::mutex queue_mutex_;
+  std::condition_variable condition_;
+  std::atomic<bool> stop_{false};
 };
 
-template <typename F, typename... Args>
-[[nodiscard]] auto
-ThreadPool::SubmitTask(F&& new_task, Args&&... args) -> decltype(auto) {
+template <class F, class... Args>
+auto ThreadPool::SubmitTask(F&& new_task, Args&&... args)
+  -> std::future<std::invoke_result_t<F, Args...>> {
   using return_type = std::invoke_result_t<F, Args...>;
-  if (exit_) {
-    throw std::runtime_error(
-      "ThreadPool: SubmitTask() called while already exit_ being true");
-  }
-  auto packaged_new_task = std::make_shared<std::packaged_task<return_type()>>(
+
+  // create a packaged task async
+  auto task = std::make_shared<std::packaged_task<return_type()>>(
     std::bind(std::forward<F>(new_task), std::forward<Args>(args)...));
-  auto fut = packaged_new_task->get_future();
+
+  std::future<return_type> res = task->get_future();
+
+  // assign task to queue
   {
-    // submit in form of std::function to the Thread Pool task queue
-    std::unique_lock<std::mutex> lock(mtx_);
-    tasks_.emplace([packaged_new_task]() { (*packaged_new_task)(); });
+    std::unique_lock<std::mutex> lock(queue_mutex_);
+
+    // don't allow pushing after stopping the pool
+    if (stop_) {
+      throw std::runtime_error("Submitting on a stopped ThreadPool");
+    }
+
+    tasks_queue_.emplace([task]() { (*task)(); });
   }
-  cv_.notify_one();
-  return fut;
+
+  // notify one waiting thread ~ 1 worker is relaxing to assign the task
+  condition_.notify_one();
+
+  return res;
 }
+
 }    // namespace longlp
 
-#endif    // SRC_CORETHREAD_POOL_H_
+#endif    // SRC_CORE_THREAD_POOL_H_

@@ -5,6 +5,7 @@
 #ifndef SRC_CORE_TYPEDEFS_H_
 #define SRC_CORE_TYPEDEFS_H_
 
+#include <array>
 #include <cstdint>
 #include <functional>
 #include <vector>
@@ -16,7 +17,10 @@ class Connection;
 using ConnectionCallback = std::function<void(not_null<Connection*>)>;
 
 using Byte               = uint8_t;
-using ByteData           = std::vector<uint8_t>;
+using DynamicByteArray   = std::vector<uint8_t>;
+
+template <size_t Size>
+using FixedByteArray = std::array<Byte, Size>;
 }    // namespace longlp
 
 #endif    // SRC_CORE_TYPEDEFS_H_

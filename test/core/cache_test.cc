@@ -6,45 +6,46 @@
 
 #include <vector>
 
+#include <fmt/format.h>
 #include <catch2/catch_test_macros.hpp>
 
-/* for convenience reason */
-using longlp::ByteData;
+namespace {
 using longlp::Cache;
+using longlp::DynamicByteArray;
+}    // namespace
 
 TEST_CASE("[core/cache]") {
-  const int capacity = 20;
+  const auto capacity = 20U;
   Cache cache(capacity);
   // "hello!"
-  ByteData data        = {104, 101, 108, 108, 111, 33};
-  const auto data_size = data.size();
+  DynamicByteArray data = {104, 101, 108, 108, 111, 33};
+  const auto data_size  = data.size();
 
   REQUIRE(cache.GetOccupancy() == 0);
   REQUIRE(cache.GetCapacity() == capacity);
 
   SECTION(
     "cache should be able to cache data up to capacity, and start evict") {
-    for (int i = 1; i <= capacity / data_size; i++) {
-      std::string url    = "url" + std::to_string(i);
-      bool cache_success = cache.TryInsert(url, data);
+    for (auto i = 1U; i <= capacity / data_size; ++i) {
+      const auto cache_success = cache.TryInsert(fmt::format("url{}", i), data);
       CHECK(cache_success);
       CHECK(cache.GetOccupancy() == i * data_size);
     }
 
-    ByteData read_buf;
+    DynamicByteArray read_buf;
     // all url1, url2, url3 should be available
-    for (int i = 1; i <= capacity / data_size; i++) {
-      auto load_success = cache.TryLoad("url" + std::to_string(i), read_buf);
+    for (auto i = 1U; i <= capacity / data_size; ++i) {
+      auto load_success = cache.TryLoad(fmt::format("url{}", i), read_buf);
       CHECK(load_success);
     }
     CHECK(read_buf.size() == ((capacity / data_size) * data_size));
 
-    // now is 3 * 6 = 18 bytes, next insert should evict the first guy
-    bool cache_success = cache.TryInsert("url4", data);
+    // now is 3 * 6 = 18 bytes, next insert should evict the first
+    const auto cache_success = cache.TryInsert("url4", data);
     CHECK(cache_success);
 
-    // url1 should be evicted
-    bool load_success = cache.TryLoad("url1", read_buf);
+    // url1 should be evicted and cannot be found
+    const bool load_success = cache.TryLoad("url1", read_buf);
     CHECK(!load_success);
   }
 }

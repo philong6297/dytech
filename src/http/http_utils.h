@@ -3,15 +3,19 @@
  * @author Yukun J
  * @expectation this header
  *
- *
 
- * * file
+ * *
+
+
+ * * * file
 
 
 
  * * * *
  * should be compatible to compile in C++
- * program on
+ *
+ * program
+ * on
 
  * *
 
@@ -23,14 +27,18 @@
 
  * * 10 2023
  *
- * This is a header
+
+ * * This is a
+ * header
  * file
 
  * *
  * for http
  * module's
  * constant
+ *
  * enum
+ *
  *
  * definitions and
  * utility
@@ -152,14 +160,16 @@ ExtensionToMime(const Extension& extension) noexcept -> std::string;
 
 /**
  * split a string into many sub strings, splitted by the specified
- *
+
+ * *
 
 
 
 
 
 
- * * * * *
+
+ * * * * * *
  * * * delimiter
  */
 [[nodiscard]] auto
@@ -188,7 +198,9 @@ Trim(const std::string& str, const char* delim = SPACE) noexcept -> std::string;
  * Apply Trim + ToUpper to a string and return the formatted version
  *
  *
- * of
+
+
+ * * * of
 
 
 
@@ -209,7 +221,9 @@ IsDirectoryExists(const std::string& directory_path) noexcept -> bool;
  * hardcode check if contains
 
 
+
  *
+ * *
 
  * * *
 
@@ -235,6 +249,8 @@ IsCgiRequest(const std::string& resource_url) noexcept -> bool;
  * Assume this file already
  *
  *
+ *
+ *
  * exists
 
 
@@ -255,11 +271,13 @@ CheckFileSize(const std::string& file_path) noexcept -> size_t;
 
 
 
- * *
+
+
+ * * * *
  * * * able
    * to contain binary data
  */
-void LoadFile(const std::string& file_path, ByteData& buffer) noexcept;
+void LoadFile(const std::string& file_path, DynamicByteArray& buffer) noexcept;
 
 }    // namespace longlp::HTTP
 

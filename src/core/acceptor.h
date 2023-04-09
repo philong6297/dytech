@@ -2,8 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef SRC_COREACCEPTOR_H_
-#define SRC_COREACCEPTOR_H_
+#ifndef SRC_CORE_ACCEPTOR_H_
+#define SRC_CORE_ACCEPTOR_H_
 
 #include <functional>
 #include <memory>
@@ -50,4 +50,4 @@ class Acceptor {
 
 }    // namespace longlp
 
-#endif    // SRC_COREACCEPTOR_H_
+#endif    // SRC_CORE_ACCEPTOR_H_

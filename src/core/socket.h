@@ -1,84 +1,21 @@
-/**
- * @file socket.h
- * @author Yukun J
- * @expectation this header file
- *
+// Copyright 2023 Phi-Long Le. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
-
-
-
- * * * *
- * *
-
- * * should
- * be compatible to compile in C++
- * program on
- *
- * Linux
-
- * *
- *
-
- * * @init_date
-
-
- * * * Dec 25
- * 2022
- *
- * This is a
- *
- * header file
- *
- * implementing
-
- * * the Socket,
- * which
-
- * * acts as
- *
- *
- * either the
- *
- *
- * listener or client
- */
-
-#ifndef SRC_CORESOCKET_H_
-#define SRC_CORESOCKET_H_
+#ifndef SRC_CORE_SOCKET_H_
+#define SRC_CORE_SOCKET_H_
 
 #include "base/macros.h"
+
+#include <cstdint>
 
 namespace longlp {
 
 class NetAddress;
 
-enum class Protocol;
-
-/**
- * This Socket class encapsulates a socket descriptor
- * which can act
-
- *
-
- * * *
-
-
-
- * * * * as
-
-   * * either listener or client
- * This class is
- *
- *
- * compatible with
-
- * *
- * both
-
- * * IPv4 and
-
-   * * IPv6
- * */
+// Socket class encapsulates a socket descriptor which can act as either
+// listener or client.
+// IPv4/6-Compatible
 class Socket {
  public:
   Socket() noexcept;
@@ -89,32 +26,31 @@ class Socket {
 
   Socket(Socket&& other) noexcept;
 
-  [[nodiscard]] auto operator=(Socket&& other) noexcept -> Socket&;
+  auto operator=(Socket&& other) noexcept -> Socket&;
 
   ~Socket();
 
   [[nodiscard]] auto GetFd() const noexcept -> int;
 
-  /* for client, one step: directly connect */
+  // for client, one step: directly connect
   void Connect(const NetAddress& server_address);
 
-  /* for server, three steps: bind + listen + accept */
-  void Bind(const NetAddress& server_address, bool set_reusable = true);
+  // for server, three steps: bind + listen + accept
+  void Bind(const NetAddress& server_address, bool is_reusable);
 
-  void Listen();
+  void Listen() const;
 
-  [[nodiscard]] auto Accept(NetAddress& client_address) -> int;
+  [[nodiscard]] auto Accept(NetAddress& client_address) const -> int;
 
-  void SetReusable();
+  void SetReusable() const;
 
-  void SetNonBlocking();
+  void SetNonBlocking() const;
 
-  [[nodiscard]] auto GetAttrs() -> int;
+  [[nodiscard]] auto GetAttrs() const -> uint64_t;
 
  private:
-  void CreateByProtocol(Protocol protocol);
-
   int fd_{-1};
 };
 }    // namespace longlp
-#endif    // SRC_CORESOCKET_H_
+
+#endif    // SRC_CORE_SOCKET_H_

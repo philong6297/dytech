@@ -4,13 +4,15 @@
 
 #include "core/buffer.h"
 
-#include <catch2/catch_test_macros.hpp>
 #include <string_view>
 #include <vector>
 
-/* for convenience reason */
+#include <catch2/catch_test_macros.hpp>
+
+namespace {
 using longlp::Buffer;
-using longlp::ByteData;
+using longlp::DynamicByteArray;
+}    // namespace
 
 TEST_CASE("[core/buffer]") {
   Buffer buf(Buffer::kDefaultCapacity);
@@ -21,12 +23,14 @@ TEST_CASE("[core/buffer]") {
     constexpr std::string_view msg1 = "Greeting from beginning!";
     constexpr std::string_view msg2 = "Farewell from end~";
 
-    ByteData buff_1;
+    DynamicByteArray buff_1;
+    buff_1.reserve(msg1.size());
     for (auto c : msg1) {
       buff_1.emplace_back(c);
     }
 
-    ByteData buff_2;
+    DynamicByteArray buff_2;
+    buff_2.reserve(msg2.size());
     for (auto c : msg2) {
       buff_2.emplace_back(c);
     }
