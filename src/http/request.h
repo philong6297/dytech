@@ -1,39 +1,13 @@
-/**
- * @file request.h
- * @author Yukun J
- * @expectation this header file
+// Copyright 2023 Phi-Long Le. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
- *
- * *
+#ifndef SRC_HTTP_REQUEST_H_
+#define SRC_HTTP_REQUEST_H_
 
-
-
- * * * *
- * should be compatible to compile in C++
- * program on Linux
-
-
- * * *
- *
- *
- * @init_date
- * Dec
-
- * * 30 2022
- *
- * This is a header file
- *
- * implementing
- * the
-
- * * HTTP request
-
- */
-
-#ifndef HTTP_REQUEST_H_
-#define HTTP_REQUEST_H_
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/macros.h"
@@ -44,61 +18,53 @@ class Header;
 enum class Method;
 enum class Version;
 
-/**
- * The (limited GET/HEAD-only HTTP 1.1) HTTP Request class
- * it
- *
- *
- *
- * contains
-
-
-
- * * * * necessary request line features including method,
- *
- *
-
- * * resource url,
- *
- * http
-
-
- * * * version and since we supports http 1.1,
-
- * * it
-
- * * also cares if the
- * client
- *
-
-
- * * * connection should be kept
-
- * * alive
- */
+// The (limited GET/HEAD-only HTTP 1.1) HTTP Request class
+// contains necessary request line features including method, resource url, http
+// version and since we supports http 1.1, it also cares if the client
+// connection should be kept alive
 class Request {
  public:
   Request(
     Method method,
     Version version,
-    std::string resource_url,
+    std::string_view resource_url,
     const std::vector<Header>& headers) noexcept;
-  explicit Request(const std::string& request_str) noexcept;    // deserialize
-                                                                // method
+
+  explicit Request(std::string_view request_str) noexcept;    // deserialize
+                                                              // method
   DISALLOW_COPY(Request);
-  [[nodiscard]] auto IsValid() const noexcept -> bool;
-  [[nodiscard]] auto ShouldClose() const noexcept -> bool;
-  [[nodiscard]] auto GetInvalidReason() const noexcept -> std::string;
-  [[nodiscard]] auto GetMethod() const noexcept -> Method;
-  [[nodiscard]] auto GetVersion() const noexcept -> Version;
-  [[nodiscard]] auto GetResourceUrl() const noexcept -> std::string;
-  [[nodiscard]] auto GetHeaders() const noexcept -> std::vector<Header>;
+  DEFAULT_MOVE(Request);
+  ~Request() = default;
+
+  [[nodiscard]] auto ShouldClose() const noexcept -> bool {
+    return should_close_;
+  }
+
+  [[nodiscard]] auto IsValid() const noexcept -> bool { return is_valid_; }
+
+  [[nodiscard]] auto GetMethod() const noexcept -> Method { return method_; }
+
+  [[nodiscard]] auto GetVersion() const noexcept -> Version { return version_; }
+
+  [[nodiscard]] auto GetResourceUrl() const noexcept -> std::string {
+    return resource_url_;
+  }
+
+  [[nodiscard]] auto GetHeaders() const noexcept -> std::vector<Header> {
+    return headers_;
+  }
+
+  [[nodiscard]] auto GetInvalidReason() const noexcept -> std::string {
+    return invalid_reason_;
+  }
+
   friend auto
   operator<<(std::ostream& os, const Request& request) -> std::ostream&;
 
  private:
-  [[nodiscard]] auto ParseRequestLine(const std::string& request_line) -> bool;
+  [[nodiscard]] auto ParseRequestLine(std::string_view request_line) -> bool;
   void ScanHeader(const Header& header);
+
   Method method_;
   Version version_;
   std::string resource_url_;
@@ -109,4 +75,4 @@ class Request {
 };
 }    // namespace longlp::http
 
-#endif    // HTTP_REQUEST_H_
+#endif    // SRC_HTTP_REQUEST_H_

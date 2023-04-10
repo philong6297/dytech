@@ -1,50 +1,21 @@
-/**
- * @file header.cpp
- * @author Yukun J
- * @expectation this
- *
- *
- * implementation
-
-
- * * * file should be compatible to compile in C++
- *
- *
- *
- * program on Linux
- *
- *
- * @init_date
- * Dec 29 2022
- *
- * This is an
- *
- *
- * implementation file implementing
-
- * * the HTTP Header
- * class, which is
-
- * *
-
- * * essentially a key-value pair
- */
+// Copyright 2023 Phi-Long Le. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #include "http/header.h"
 
+#include <fmt/format.h>
+
 #include "http/constants.h"
+#include "http/http_utils.h"
 
 namespace longlp::http {
 
-Header::Header(const std::string& key, const std::string& value) :
+Header::Header(const std::string_view key, const std::string_view value) :
   key_(key),
   value_(value) {}
 
-Header::Header(std::string&& key, std::string&& value) :
-  key_(std::move(key)),
-  value_(std::move(value)) {}
-
-Header::Header(const std::string& line) {
+Header::Header(const std::string_view line) {
   auto tokens = Split(line, kColon);
   if (tokens.size() < 2) {
     valid_ = false;
@@ -52,55 +23,31 @@ Header::Header(const std::string& line) {
   }
   key_ = std::move(tokens[0]);
   tokens.erase(tokens.begin());
-  /* the value could be like '127.0.0.1:20080' and get split into more than
-   *
-   * 1
-
-
-
-   */
-  std::string value = (tokens.size() == 1) ? tokens[0] : Join(tokens, kColon);
-  value_            = std::move(value);
-}
-
-Header::Header(Header&& other) noexcept :
-  key_(std::move(other.key_)),
-  value_(std::move(other.value_)),
-  valid_(other.valid_) {}
-
-auto Header::operator=(Header&& other) noexcept -> Header& {
-  key_   = std::move(other.key_);
-  value_ = std::move(other.value_);
-  valid_ = other.valid_;
-  return *this;
-}
-
-auto Header::IsValid() const -> bool {
-  return valid_;
-}
-
-auto Header::GetKey() const -> std::string {
-  return key_;
-}
-
-auto Header::GetValue() const -> std::string {
-  return value_;
-}
-
-void Header::SetValue(const std::string& new_value) noexcept {
-  value_ = new_value;
+  // the value could be like '127.0.0.1:20080' and get split into more than 1
+  value_ = (tokens.size() == 1) ? tokens[0] : Join(tokens, kColon);
 }
 
 auto Header::Serialize() const -> std::string {
-  return key_ + kColon + value_ + kCRLF;
+  return fmt::format(
+    "{key}{colon}{value}{crlf}",
+    fmt::arg("key", key_),
+    fmt::arg("colon", kColon),
+    fmt::arg("value", value_),
+    fmt::arg("crlf", kCRLF));
 }
 
 auto operator<<(std::ostream& os, const Header& header) -> std::ostream& {
-  os << "HTTP Header contains:" << std::endl;
-  os << "Key: " << header.GetKey() << std::endl;
-  os << "Value: " << header.GetValue() << std::endl;
-  os << "IsValid: " << ((header.IsValid()) ? "True" : "False") << std::endl;
-  os << "Serialize to: " << header.Serialize();
+  os << fmt::format(
+    "HTTP Header contains:\n"
+    "Key: {key}\n"
+    "Value: {value}\n"
+    "IsValid: {is_valid}\n"
+    "Serialize to: {serialize}",
+    fmt::arg("key", header.GetKey()),
+    fmt::arg("value", header.GetValue()),
+    fmt::arg("is_valid", (header.IsValid()) ? "True" : "False"),
+    fmt::arg("serialize", header.Serialize()));
+
   return os;
 }
 

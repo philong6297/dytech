@@ -2,8 +2,8 @@
 // Use of this source code is governed by a MIT license that can be
 // found in the LICENSE file.
 
-#ifndef HTTP_HTTP_UTILS_H_
-#define HTTP_HTTP_UTILS_H_
+#ifndef SRC_HTTP_SRC_HTTP_UTILS_H_
+#define SRC_HTTP_SRC_HTTP_UTILS_H_
 
 #include <map>
 #include <string>
@@ -60,4 +60,4 @@ void LoadFile(std::string_view file_path, DynamicByteArray& buffer) noexcept;
 
 }    // namespace longlp::http
 
-#endif    // HTTP_HTTP_UTILS_H_
+#endif    // SRC_HTTP_SRC_HTTP_UTILS_H_

@@ -1,169 +1,51 @@
-/**
- * @file response.cpp
- * @author Yukun J
- * @expectation this
- *
- *
-
- *
- *
-
- * * *
-
-
-
-
-
-
- * * * *
- * *
-
- * * *
-
-
- * * * *
-
-
-
- * * * *
- * implementation
- *
-
- * *
-
- * * file should
- * be
-
- * *
-
- * * compatible to
-
- * *
- * compile
- * in
-
-
- * * *
-
- * *
-
- * * C++
- *
- *
-
- * *
-
- * * program
- *
-
-
- * *
-
- * * * on
-
-
- * * *
-
- * * Linux
-
- * *
-
- *
- * *
- * @init_date
-
- * *
- * Jan
-
- * * 10
- *
- *
- * 2023
- *
-
-
- * * *
- *
- * This
-
- * *
- * is
- *
-
- * * an
- *
- *
- *
- *
- *
-
- * * implementation
-
- * *
- * file
-
-
- * * *
-
- *
- * *
-
- * *
-
- * *
- * implementing the
- *
- * HTTP
-
- * *
-
- * *
- *
- *
- *
- *
- * response
-
- */
+// Copyright 2023 Phi-Long Le. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #include "http/response.h"
 
 #include <sstream>
 #include <utility>
 
+#include <fmt/format.h>
+
 #include "http/constants.h"
 #include "http/header.h"
+#include "http/http_utils.h"
 
 namespace longlp::http {
 
+// static
 auto Response::Make200Response(
   bool should_close,
   std::optional<std::string> resource_url) -> Response {
-  return {kResponseStatusOK, should_close, std::move(resource_url)};
+  return {kResponseStatusOK.data(), should_close, std::move(resource_url)};
 }
 
+// static
 auto Response::Make400Response() noexcept -> Response {
-  return {kResponseStatusBadRequest, true, std::nullopt};
+  return {kResponseStatusBadRequest.data(), true, std::nullopt};
 }
 
+// static
 auto Response::Make404Response() noexcept -> Response {
-  return {kResponseStatusNotFound, true, std::nullopt};
+  return {kResponseStatusNotFound.data(), true, std::nullopt};
 }
 
+// static
 auto Response::Make503Response() noexcept -> Response {
-  return {kResponseStatusServiceUnavailable, true, std::nullopt};
+  return {kResponseStatusServiceUnavailable.data(), true, std::nullopt};
 }
 
 Response::Response(
-  const std::string& status_code,
+  const std::string_view status_code,
   bool should_close,
   std::optional<std::string> resource_url) :
   should_close_(should_close),
   resource_url_(std::move(resource_url)) {
   // construct the status line
-  std::stringstream str_stream;
-  str_stream << kHTTPVersion << kSpace << status_code;
-  status_line_ = str_stream.str();
+  status_line_ = fmt::format("{}{}{}", kHTTPVersion, kSpace, status_code);
+
   // add necessary headers
   headers_.emplace_back(kHeaderServer, kServerName);
   headers_.emplace_back(
@@ -190,7 +72,7 @@ Response::Response(
 void Response::Serialize(DynamicByteArray& buffer) {
   // construct everything before body
   std::stringstream str_stream;
-  str_stream << status_line_ << kCRLF;
+  str_stream << fmt::format("{}{}", status_line_, kCRLF);
   for (const auto& header : headers_) {
     str_stream << header.Serialize();
   }
@@ -199,13 +81,9 @@ void Response::Serialize(DynamicByteArray& buffer) {
   buffer.insert(buffer.end(), response_head.begin(), response_head.end());
 }
 
-auto Response::GetHeaders() -> std::vector<Header> {
-  return headers_;
-}
-
 auto Response::ChangeHeader(
-  const std::string& key,
-  const std::string& new_value) noexcept -> bool {
+  const std::string_view key,
+  const std::string_view new_value) noexcept -> bool {
   for (auto& it : headers_) {
     if (it.GetKey() == key) {
       it.SetValue(new_value);

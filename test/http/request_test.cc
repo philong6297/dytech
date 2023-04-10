@@ -1,50 +1,23 @@
-/**
- * @file request_test.cpp
- * @author Yukun J
- * @expectation this
- *
- *
-
- *
- * *
-
-
- * * * implementation file should be compatible to compile in C++
- *
- *
- * program
- * on
-
- * *
-
-
- * * * Linux
- * @init_date Feb 1 2023
- *
- * This is
- * the
- * unit test
- * file
- * for
- *
-
- * *
- * http/Request class
- */
+// Copyright 2023 Phi-Long Le. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #include "http/request.h"
 
 #include <catch2/catch_test_macros.hpp>
+
 #include "http/constants.h"
 #include "http/header.h"
 
+namespace {
 using longlp::http::Method;
 using longlp::http::Request;
 using longlp::http::Version;
+}    // namespace
 
 TEST_CASE("[http/request]") {
   SECTION("valid & invalid parsing of a request from string") {
-    /* not end with /r/n */
+    // not end with /r/n
     std::string request_0_str =
       "GET /hello.html HTTP/1.1\r\n"
       "User-Agent: Mozilla/4.0\r\n"
@@ -53,7 +26,7 @@ TEST_CASE("[http/request]") {
     Request request_0{request_0_str};
     CHECK(!request_0.IsValid());
 
-    /* first line is not request line */
+    // first line is not request line
     std::string request_1_str =
       "User-Agent: Mozilla/4.0\r\n"
       "GET /hello.html HTTP/1.1\r\n"
@@ -63,7 +36,7 @@ TEST_CASE("[http/request]") {
     Request request_1{request_1_str};
     CHECK(!request_1.IsValid());
 
-    /* method not supported */
+    // method not supported
     std::string request_2_str =
       "PUNCH /hello.html HTTP/1.1\r\n"
       "User-Agent: Mozilla/4.0\r\n"
@@ -73,7 +46,7 @@ TEST_CASE("[http/request]") {
     Request request_2{request_2_str};
     CHECK(!request_2.IsValid());
 
-    /* version not supported */
+    // version not supported
     std::string request_3_str =
       "GET /hello.html HTTP/2.0\r\n"
       "User-Agent: Mozilla/4.0\r\n"
@@ -83,16 +56,16 @@ TEST_CASE("[http/request]") {
     Request request_3{request_3_str};
     CHECK(!request_3.IsValid());
 
-    /* the bare minimum valid request */
+    // the bare minimum valid request
     std::string request_4_str =
       "GET /hello.html HTTP/1.1\r\n"
       "\r\n";
     Request request_4{request_4_str};
     CHECK(request_4.IsValid());
     CHECK(request_4.GetMethod() == Method::kGET);
-    CHECK(request_4.GetVersion() == Versionhttp_1_1);
+    CHECK(request_4.GetVersion() == Version::kHTTP_1_1);
 
-    /* connection to close request */
+    // connection to close request
     std::string request_5_str =
       "HEAD /hello.html HTTP/1.1\r\n"
       "User-Agent: Mozilla/4.0\r\n"
@@ -104,7 +77,7 @@ TEST_CASE("[http/request]") {
     CHECK(request_5.GetMethod() == Method::kHEAD);
     CHECK(request_5.ShouldClose());
 
-    /* connection to kepp alive request */
+    // connection to kepp alive request
     std::string request_6_str =
       "GET /hello.html HTTP/1.1\r\n"
       "User-Agent: Mozilla/4.0\r\n"

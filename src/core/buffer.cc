@@ -16,9 +16,18 @@ Buffer::Buffer(size_t initial_capacity) {
 
 Buffer::~Buffer() = default;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
+
 void Buffer::AppendUnsafe(const Byte* data, size_t size) {
   buf_.insert(buf_.end(), data, data + size);
 }
+
+void Buffer::AppendHeadUnsafe(const Byte* data, size_t size) {
+  buf_.insert(buf_.begin(), data, data + size);
+}
+
+#pragma GCC diagnostic pop
 
 void Buffer::Append(const std::string& str) {
   AppendUnsafe(bit_cast<const Byte*>(str.c_str()), str.size());
@@ -29,10 +38,6 @@ void Buffer::Append(DynamicByteArray&& other_buffer) {
     buf_.end(),
     std::make_move_iterator(other_buffer.begin()),
     std::make_move_iterator(other_buffer.end()));
-}
-
-void Buffer::AppendHeadUnsafe(const Byte* data, size_t size) {
-  buf_.insert(buf_.begin(), data, data + size);
 }
 
 void Buffer::AppendHead(DynamicByteArray&& other_buffer) {

@@ -1,39 +1,6 @@
-/**
- * @file request_test.cpp
- * @author Yukun J
- * @expectation this
- *
- *
-
- *
-
- * * *
-
-
- * * * implementation file should be compatible to compile in C++
- *
-
- * *
- * program
- * on
-
- * *
-
-
- * * * Linux
- * @init_date Feb 1 2023
- *
- * This
- * is
- * the
- * unit test
- * file
- * for
- *
-
- * *
- * http/Response class
- */
+// Copyright 2023 Phi-Long Le. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
 #include "http/response.h"
 
@@ -41,10 +8,11 @@
 #include "http/constants.h"
 #include "http/header.h"
 
-using longlp::http::Header;
+namespace {
 using longlp::http::kHeaderContentLength;
 using longlp::http::kResponseStatusOK;
 using longlp::http::Response;
+}    // namespace
 
 TEST_CASE("[http/response]") {
   SECTION("response should be able to modify header on the fly") {

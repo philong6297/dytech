@@ -25,16 +25,20 @@ class CGIRunner {
   [[nodiscard]] static auto
   ParseCGIRunner(std::string_view resource_url) noexcept -> CGIRunner;
   [[nodiscard]] static auto MakeInvalidCGIRunner() noexcept -> CGIRunner;
+
   explicit CGIRunner(
     std::string_view path,
     const std::vector<std::string>& arguments) noexcept;
+
   [[nodiscard]] auto Run() -> DynamicByteArray;
-  [[nodiscard]] auto IsValid() const noexcept -> bool;
-  [[nodiscard]] auto GetPath() const noexcept -> std::string;
+
+  [[nodiscard]] auto IsValid() const noexcept -> bool { return valid_; }
+
+  [[nodiscard]] auto GetPath() const noexcept -> std::string {
+    return cgi_program_path_;
+  }
 
  private:
-  [[nodiscard]] auto BuildArgumentList() -> char**;
-  void FreeArgumentList(char** arg_list);
   std::string cgi_program_path_;
   std::vector<std::string> cgi_arguments_;
   bool valid_{true};

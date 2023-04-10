@@ -119,7 +119,10 @@ auto Connection::Recv() -> std::pair<ssize_t, bool> {
 
 void Connection::Send() {
   const auto to_write = narrow_cast<ssize_t>(GetWriteBufferSize());
-  const Byte* buf     = write_buffer_->Data();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
+  const Byte* buf = write_buffer_->Data();
+#pragma GCC diagnostic pop
   for (ssize_t curr_write = 0; curr_write < to_write;) {
     auto write = send(
       GetFd(),

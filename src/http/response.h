@@ -1,57 +1,13 @@
-/**
- * @file response.h
- * @author Yukun J
- * @expectation this header
- * file
+// Copyright 2023 Phi-Long Le. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
-
-
-
-
- * * * *
- * *
-
- * * *
-
-
- * * * should be compatible to compile in
- * C++
- *
- * program
- * on
-
- * *
- * Linux
- *
-
- * *
- * @init_date
-
- * * Dec
-
- * *
- * 31 2022
-
- * *
- * This
- * is a
- * header
-
- * * file
- * implementing
-
- * * the
- * HTTP
- *
- * response
-
- */
-
-#ifndef HTTP_RESPONSE_H_
-#define HTTP_RESPONSE_H_
+#ifndef SRC_HTTP_RESPONSE_H_
+#define SRC_HTTP_RESPONSE_H_
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "core/typedefs.h"
@@ -60,48 +16,32 @@ namespace longlp::http {
 
 class Header;
 
-/**
- * The HTTP Response class
- * use vector of char to be able to
- *
- *
- *
- *
- * contain
-
-
-
-
-
-
- * * * *
- * * * * binary data
- */
+// The HTTP Response class use vector of char to be able to contain binary data
 class Response {
  public:
-  /* 200 OK response */
+  // 200 OK response
   [[nodiscard]] static auto
   Make200Response(bool should_close, std::optional<std::string> resource_url)
     -> Response;
-  /* 400 Bad Request response, close connection */
+  // 400 Bad Request response, close connection
   [[nodiscard]] static auto Make400Response() noexcept -> Response;
-  /* 404 Not Found response, close connection */
+  // 404 Not Found response, close connection
   [[nodiscard]] static auto Make404Response() noexcept -> Response;
-  /* 503 Service Unavailable response, close connection */
+  // 503 Service Unavailable response, close connection
   [[nodiscard]] static auto Make503Response() noexcept -> Response;
 
   Response(
-    const std::string& status_code,
+    std::string_view status_code,
     bool should_close,
     std::optional<std::string> resource_url);
 
-  /* no content, content should separately be loaded */
+  // no content, content should separately be loaded
   void Serialize(DynamicByteArray& buffer);
 
-  [[nodiscard]] auto GetHeaders() -> std::vector<Header>;
+  [[nodiscard]] auto GetHeaders() -> std::vector<Header> { return headers_; }
 
   [[nodiscard]] auto
-  ChangeHeader(const std::string& key, const std::string& new_value) noexcept
+  ChangeHeader(std::string_view key, std::string_view new_value) noexcept
     -> bool;
 
  private:
@@ -114,4 +54,4 @@ class Response {
 
 }    // namespace longlp::http
 
-#endif    // HTTP_RESPONSE_H_
+#endif    // SRC_HTTP_RESPONSE_H_

@@ -52,13 +52,13 @@ constexpr std::string_view kResponseStatusServiceUnavailable =
 enum class Method {
   kGET,
   kHEAD,
-  kUNSUPPORTED
+  kUnsupported
 };
 
 // only support HTTP 1.1 now
 enum class Version {
   kHTTP_1_1,
-  kUNSUPPORTED
+  kUnsupported
 };
 
 // Content Extension enum

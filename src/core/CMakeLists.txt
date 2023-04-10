@@ -27,5 +27,5 @@ target_sources(
           distribution_agent.h
 )
 target_link_libraries(core PUBLIC log Threads::Threads base)
-target_compile_options(core PUBLIC ${LONGLP_DESIRED_COMPILE_OPTIONS} -Wno-unsafe-buffer-usage)
+target_compile_options(core PUBLIC ${LONGLP_DESIRED_COMPILE_OPTIONS})
 target_include_directories(core PUBLIC ${LONGLP_PROJECT_SRC_DIR})

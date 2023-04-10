@@ -15,11 +15,56 @@
 #include <thread>
 
 #include <fmt/format.h>
+#include <fmt/std.h>
 
+#include "base/pointers.h"
 #include "http/constants.h"
 #include "http/http_utils.h"
 
 namespace longlp::http {
+
+namespace {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
+
+auto BuildArgv(
+  const std::vector<std::string>& cgi_arguments,
+  const std::string_view cgi_program_path) -> owner<char**> {
+  // build argument lists for the cgi program
+  assert(!cgi_program_path.empty());
+
+  // argv = path + program args + null indicated arg
+  auto** argv =
+    static_cast<owner<char**>>(new char*[cgi_arguments.size() + 2U]);
+
+  argv[0] = static_cast<owner<char*>>(new char[cgi_program_path.size() + 1U]);
+  std::memcpy(argv[0], cgi_program_path.data(), cgi_program_path.size());
+  argv[0][cgi_program_path.size()] = 0;
+
+  for (auto i = 0U; i < cgi_arguments.size(); ++i) {
+    argv[i + 1] =
+      static_cast<owner<char*>>(new char[cgi_arguments[i].size() + 1]);
+    std::memcpy(argv[i + 1], cgi_arguments[i].c_str(), cgi_arguments[i].size());
+    argv[i + 1][cgi_arguments[i].size()] = 0;
+  }
+
+  // indicate the end of arg list
+  argv[cgi_arguments.size() + 1] = nullptr;
+
+  return argv;
+}
+
+void DeleteArgv(owner<char**> argv, size_t size) {
+  for (auto i = 0U; i < size; ++i) {
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
+    delete argv[i];
+  }
+  delete argv;
+}
+
+#pragma GCC diagnostic pop
+
+}    // namespace
 
 // static
 auto CGIRunner::ParseCGIRunner(const std::string_view resource_url) noexcept
@@ -82,14 +127,13 @@ auto CGIRunner::Run() -> DynamicByteArray {
     dup2(fd, STDOUT_FILENO);
     close(fd);
 
-    // build argument lists for the cgi program
-    char** cgi_argv = BuildArgumentList();
+    owner<char**> argv = BuildArgv(cgi_arguments_, cgi_program_path_);
 
-    // walk into cig program
-    if (execve(cgi_program_path_.c_str(), cgi_argv, nullptr) < 0) {
+    // walk into cgi program
+    if (execve(cgi_program_path_.c_str(), argv, nullptr) < 0) {
       // only reach here when execve fails
       perror("fail to execve()");
-      FreeArgumentList(cgi_argv);
+      DeleteArgv(argv, cgi_arguments_.size() + 2U);
       // TODO(longlp): not thread-safe
       exit(1);    // exit child process
     }
@@ -110,38 +154,6 @@ auto CGIRunner::Run() -> DynamicByteArray {
     std::ignore = DeleteFile(shared_file_name);
   }
   return cgi_result;
-}
-
-auto CGIRunner::IsValid() const noexcept -> bool {
-  return valid_;
-}
-
-auto CGIRunner::GetPath() const noexcept -> std::string {
-  return cgi_program_path_;
-}
-
-auto CGIRunner::BuildArgumentList() -> char** {
-  assert(!cgi_program_path_.empty());
-  char** cgi_argv = (char**)calloc(cgi_arguments_.size() + 2, sizeof(char*));
-  cgi_argv[0]     = (char*)calloc(cgi_program_path_.size() + 1, sizeof(char));
-  memcpy(cgi_argv[0], cgi_program_path_.c_str(), cgi_program_path_.size());
-  for (size_t i = 0; i < cgi_arguments_.size(); ++i) {
-    cgi_argv[i + 1] = (char*)calloc(cgi_arguments_[i].size() + 1, sizeof(char));
-    memcpy(
-      cgi_argv[i + 1],
-      cgi_arguments_[i].c_str(),
-      cgi_arguments_[i].size());
-  }
-  cgi_argv[cgi_arguments_.size() + 1] = nullptr;    // indicate the end of arg
-                                                    // list
-  return cgi_argv;
-}
-
-void CGIRunner::FreeArgumentList(char** arg_list) {
-  for (int i = 0; i < static_cast<int>(cgi_arguments_.size()) + 2; ++i) {
-    free(arg_list[i]);
-  }
-  free(arg_list);
 }
 
 }    // namespace longlp::http

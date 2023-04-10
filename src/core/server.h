@@ -20,7 +20,7 @@ class Looper;
 class ThreadPool;
 class DistributionAgent;
 
-// The class for setting up a web server using the Turtle framework
+// The class for setting up a web server using the framework
 // User should provide the callback functions in OnAccept() and OnHandle()
 // The rest is already taken care of and in most cases users don't need to touch
 // upon

@@ -1,4 +1,4 @@
-# Build the turtle logging library
+# Build the logging library
 add_library(log STATIC)
 target_sources(log PRIVATE logger.cc logger.h)
 target_link_libraries(log PUBLIC Threads::Threads fmt::fmt base)

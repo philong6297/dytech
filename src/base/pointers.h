@@ -10,6 +10,7 @@
 namespace longlp {
 using gsl::make_not_null;
 using gsl::not_null;
+using gsl::owner;
 }    // namespace longlp
 
 #endif    // SRC_BASE_POINTERS_H_

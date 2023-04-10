@@ -1,7 +1,8 @@
 ---
 Checks: >
   -cppcoreguidelines-pro-type-vararg,
-  -hicpp-vararg
+  -hicpp-vararg,
+  -bugprone-easily-swappable-parameters
 InheritParentConfig: true
 CheckOptions:
   - key: hicpp-signed-bitwise.IgnorePositiveIntegerLiterals

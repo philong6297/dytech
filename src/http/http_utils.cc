@@ -22,7 +22,7 @@ auto ToMethod(const std::string_view method_str) noexcept -> Method {
   static const NoDestructor<std::map<std::string, Method>> kStringToMethod{
     {{"GET", Method::kGET},
      {"HEAD", Method::kHEAD},
-     {"UNSUPPORTED", Method::kUNSUPPORTED}}
+     {"UNSUPPORTED", Method::kUnsupported}}
   };
 
   const auto method_str_formatted = Format(method_str);
@@ -31,7 +31,7 @@ auto ToMethod(const std::string_view method_str) noexcept -> Method {
       found != kStringToMethod->end()) {
     return found->second;
   }
-  return Method::kUNSUPPORTED;
+  return Method::kUnsupported;
 }
 
 auto ToVersion(const std::string_view version_str) noexcept -> Version {
@@ -40,7 +40,7 @@ auto ToVersion(const std::string_view version_str) noexcept -> Version {
       {{"HTTP/1.1", Version::kHTTP_1_1},
        {
        "UNSUPPORTED",
-       Version::kUNSUPPORTED,
+       Version::kUnsupported,
        }}
   };
   const auto version_str_formatted = Format(version_str);
@@ -48,7 +48,7 @@ auto ToVersion(const std::string_view version_str) noexcept -> Version {
       found != kStringToVersion->end()) {
     return found->second;
   }
-  return Version::kUNSUPPORTED;
+  return Version::kUnsupported;
 }
 
 auto ToExtension(const std::string_view extension_str) noexcept -> Extension {
