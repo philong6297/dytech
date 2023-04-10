@@ -20,7 +20,7 @@ class Connection;
 // to be monitored
 class Poller {
  public:
-  /* the default maximum number of events to be listed on epoll tree */
+  // the default maximum number of events to be listed on epoll tree
   static constexpr auto kDefaultListenedEvents = 1024U;
   static constexpr auto kBlockForever          = -1;
 

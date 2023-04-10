@@ -24,8 +24,8 @@ Acceptor::Acceptor(
   const NetAddress& server_address) :
   agent_{agent} {
   auto acceptor_socket = std::make_unique<Socket>();
-  acceptor_socket->Bind(server_address, true);
-  acceptor_socket->Listen();
+  acceptor_socket->BindWithServerAddress(server_address, true);
+  acceptor_socket->StartListeningIncomingConnection();
 
   acceptor_connection_ =
     std::make_unique<Connection>(std::move(acceptor_socket));
@@ -44,14 +44,15 @@ void Acceptor::SetOnAccept(ConnectionCallback on_accept_callback) {
   on_accept_cb_ = std::move(on_accept_callback);
   acceptor_connection_->SetCallback([this](not_null<Connection*> connection) {
     NetAddress client_address{};
-    const auto accept_fd = connection->GetSocket()->Accept(client_address);
+    const auto accept_fd =
+      connection->GetSocket()->AcceptClientAddress(client_address);
     if (accept_fd == -1) {
       return;
     }
-    auto client_sock = std::make_unique<Socket>(accept_fd);
-    client_sock->SetNonBlocking();
+    auto client_socket = std::make_unique<Socket>(accept_fd);
+    client_socket->SetNonBlocking();
     auto client_connection =
-      std::make_unique<Connection>(std::move(client_sock));
+      std::make_unique<Connection>(std::move(client_socket));
     client_connection
       ->SetEvents(Poller::Event::kRead | Poller::Event::kET);    // edge-trigger
                                                                  // for client

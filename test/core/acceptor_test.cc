@@ -65,20 +65,20 @@ TEST_CASE("[core/acceptor]") {
     std::vector<std::future<void>> futs;
     for (auto i = 0U; i < kClientNum; ++i) {
       auto fut = std::async(std::launch::async, [&]() {
-        Socket client_sock;
-        client_sock.Connect(local_host);
-        CHECK(client_sock.GetFd() != -1);
-        send(client_sock.GetFd(), kMessage.data(), kMessage.size(), 0);
+        Socket client_socket;
+        client_socket.ConnectToServer(local_host);
+        CHECK(client_socket.GetFd() != -1);
+        send(client_socket.GetFd(), kMessage.data(), kMessage.size(), 0);
       });
       futs.push_back(std::move(fut));
     }
 
     auto runner = std::async(std::launch::async, [&]() {
-      single_reactor->Loop();
+      single_reactor->StartLoop();
     });
     futs.push_back(std::move(runner));
     std::this_thread::sleep_for(2s);
-    single_reactor->SetExit();    // terminate the looper
+    single_reactor->Exit();    // terminate the looper
 
     // accept & handle should be triggered exactly 3 times
     CHECK(accept_trigger == kClientNum);

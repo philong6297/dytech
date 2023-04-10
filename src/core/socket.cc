@@ -69,7 +69,7 @@ auto Socket::GetFd() const noexcept -> int {
   return fd_;
 }
 
-void Socket::Connect(const NetAddress& server_address) {
+void Socket::ConnectToServer(const NetAddress& server_address) {
   if (fd_ == -1) {
     fd_ = CreateSocket(server_address.GetProtocol());
   }
@@ -83,7 +83,8 @@ void Socket::Connect(const NetAddress& server_address) {
   }
 }
 
-void Socket::Bind(const NetAddress& server_address, bool is_reusable) {
+void Socket::
+  BindWithServerAddress(const NetAddress& server_address, bool is_reusable) {
   if (fd_ == -1) {
     fd_ = CreateSocket(server_address.GetProtocol());
   }
@@ -95,21 +96,24 @@ void Socket::Bind(const NetAddress& server_address, bool is_reusable) {
       fd_,
       server_address.address_data(),
       *server_address.address_data_length()) == -1) {
-    Log<LogLevel::kError>("Socket: Bind() error");
-    throw std::logic_error("Socket: Bind() error");
+    Log<LogLevel::kError>("Socket: BindWithServerAddress() error");
+    throw std::logic_error("Socket: BindWithServerAddress() error");
   }
 }
 
-void Socket::Listen() const {
-  assert(fd_ != -1 && "cannot Listen() with an invalid fd");
+void Socket::StartListeningIncomingConnection() const {
+  assert(
+    fd_ != -1 &&
+    "cannot StartListeningIncomingConnection() with an invalid "
+    "fd");
   if (listen(fd_, kBackLog) == -1) {
-    Log<LogLevel::kError>("Socket: Listen() error");
-    throw std::logic_error("Socket: Listen() error");
+    Log<LogLevel::kError>("Socket: StartListeningIncomingConnection() error");
+    throw std::logic_error("Socket: StartListeningIncomingConnection() error");
   }
 }
 
-auto Socket::Accept(NetAddress& client_address) const -> int {
-  assert(fd_ != -1 && "cannot Accept() with an invalid fd");
+auto Socket::AcceptClientAddress(NetAddress& client_address) const -> int {
+  assert(fd_ != -1 && "cannot AcceptClientAddress() with an invalid fd");
   // use accept4() with the SOCK_NONBLOCK flag, it sets the accepted socket file
   // descriptor to non-blocking mode for its future operations. However, it does
   // not affect the original listening socket file descriptor, which can still
@@ -120,11 +124,11 @@ auto Socket::Accept(NetAddress& client_address) const -> int {
     fd_,
     client_address.address_data(),
     client_address.address_data_length(),
-    SOCK_CLOEXEC | SOCK_NONBLOCK);
+    SOCK_CLOEXEC);
   if (client_fd == -1) {
     // under high pressure, accept might fail.
     // but server should not fail at this time
-    Log<LogLevel::kWarning>("Socket: Accept() error");
+    Log<LogLevel::kWarning>("Socket: AcceptClientAddress() error");
   }
   return client_fd;
 }

@@ -27,12 +27,12 @@ using namespace std::chrono_literals;
 
 TEST_CASE("[core/poller]") {
   NetAddress local_host("127.0.0.1", 20080, Protocol::Ipv4);
-  Socket server_sock;
+  Socket server_socket;
 
   // build the server socket
-  server_sock.Bind(local_host, true);
-  server_sock.Listen();
-  REQUIRE(server_sock.GetFd() != -1);
+  server_socket.BindWithServerAddress(local_host, true);
+  server_socket.StartListeningIncomingConnection();
+  REQUIRE(server_socket.GetFd() != -1);
 
   constexpr auto client_num = 3U;
   // build the empty poller
@@ -45,7 +45,7 @@ TEST_CASE("[core/poller]") {
     for (auto i = 0U; i < client_num; ++i) {
       threads.emplace_back([&]() {
         auto client_socket = Socket();
-        client_socket.Connect(local_host);
+        client_socket.ConnectToServer(local_host);
         const std::string_view message = "Hello from client!";
         send(client_socket.GetFd(), message.data(), message.size(), 0);
         std::this_thread::sleep_for(2s);
@@ -56,11 +56,11 @@ TEST_CASE("[core/poller]") {
     std::vector<std::shared_ptr<Connection>> client_conns;
     for (auto i = 0U; i < client_num; ++i) {
       NetAddress client_address;
-      auto client_sock =
-        std::make_unique<Socket>(server_sock.Accept(client_address));
-      CHECK(client_sock->GetFd() != -1);
+      auto client_socket = std::make_unique<Socket>(
+        server_socket.AcceptClientAddress(client_address));
+      CHECK(client_socket->GetFd() != -1);
       client_conns
-        .push_back(std::make_shared<Connection>(std::move(client_sock)));
+        .push_back(std::make_shared<Connection>(std::move(client_socket)));
       client_conns[i]->SetEvents(Poller::Event::kRead);
     }
 

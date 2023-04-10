@@ -19,7 +19,7 @@ Server::Server(const NetAddress& server_address, int64_t num_threads) :
   reactors_.reserve(pool_->GetSize());
   for (auto i = 0U; i < pool_->GetSize(); ++i) {
     auto& reactor = reactors_.emplace_back(std::make_unique<Looper>());
-    pool_->SubmitTask([&reactor] { reactor->Loop(); });
+    pool_->SubmitTask([&reactor] { reactor->StartLoop(); });
     agent_->AddCandidate(reactor.get());
   }
 
@@ -45,7 +45,7 @@ void Server::Begin() {
     throw std::logic_error(
       "Please specify OnHandle callback function before starts");
   }
-  listener_->Loop();
+  listener_->StartLoop();
 }
 
 }    // namespace longlp

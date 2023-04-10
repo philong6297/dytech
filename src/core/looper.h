@@ -29,7 +29,7 @@ class Looper {
   ~Looper();
   DISALLOW_COPY_AND_MOVE(Looper);
 
-  void Loop();
+  void StartLoop();
 
   void AddAcceptor(Connection* acceptor_conn);
 
@@ -37,7 +37,7 @@ class Looper {
 
   [[nodiscard]] auto DeleteConnection(int fd) -> bool;
 
-  void SetExit() noexcept { exit_ = true; }
+  void Exit() noexcept { exit_ = true; }
 
  private:
   std::unique_ptr<Poller> poller_;

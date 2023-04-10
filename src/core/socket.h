@@ -33,14 +33,16 @@ class Socket {
   [[nodiscard]] auto GetFd() const noexcept -> int;
 
   // for client, one step: directly connect
-  void Connect(const NetAddress& server_address);
+  void ConnectToServer(const NetAddress& server_address);
 
   // for server, three steps: bind + listen + accept
-  void Bind(const NetAddress& server_address, bool is_reusable);
+  void
+  BindWithServerAddress(const NetAddress& server_address, bool is_reusable);
 
-  void Listen() const;
+  void StartListeningIncomingConnection() const;
 
-  [[nodiscard]] auto Accept(NetAddress& client_address) const -> int;
+  [[nodiscard]] auto
+  AcceptClientAddress(NetAddress& client_address) const -> int;
 
   void SetReusable() const;
 

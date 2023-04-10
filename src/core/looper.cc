@@ -4,6 +4,7 @@
 
 #include "core/looper.h"
 
+#include <fmt/format.h>
 #include "core/acceptor.h"
 #include "core/connection.h"
 #include "core/poller.h"
@@ -12,7 +13,7 @@
 namespace longlp {
 
 namespace {
-/* the epoll_wait time in milliseconds */
+// the epoll_wait time in milliseconds
 constexpr int kTimeoutMs = 3000;
 }    // namespace
 
@@ -21,9 +22,10 @@ Looper::Looper() :
 
 Looper::~Looper() = default;
 
-void Looper::Loop() {
+void Looper::StartLoop() {
   while (!exit_) {
     auto ready_connections = poller_->Poll(kTimeoutMs);
+    fmt::print("ready connection size: {}\n", ready_connections.size());
     for (auto& connection : ready_connections) {
       connection->Start();
     }
