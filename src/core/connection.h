@@ -55,19 +55,19 @@ class Connection {
   // for Buffer
   [[nodiscard]] auto
   FindAndPopTill(const std::string& target) -> std::optional<std::string>;
-  [[nodiscard]] auto GetReadBufferSize() const noexcept -> size_t;
-  [[nodiscard]] auto GetWriteBufferSize() const noexcept -> size_t;
-  void WriteToReadBuffer(const Byte* buf, size_t size);
-  void WriteToWriteBuffer(const Byte* buf, size_t size);
-  void WriteToReadBuffer(const std::string& str);
-  void WriteToWriteBuffer(const std::string& str);
-  void WriteToWriteBuffer(DynamicByteArray&& other_buf);
+  [[nodiscard]] auto GetReadSize() const noexcept -> size_t;
+  [[nodiscard]] auto GetWriteSize() const noexcept -> size_t;
+  void ReadUnsafe(const Byte* buf, size_t size);
+  void WriteUnsafe(const Byte* buf, size_t size);
+  void Read(const std::string& str);
+  void Write(const std::string& str);
+  void Write(DynamicByteArray&& other_buf);
 
-  [[nodiscard]] auto Read() const noexcept -> const Byte*;
-  [[nodiscard]] auto ReadAsString() const noexcept -> std::string;
+  [[nodiscard]] auto ReadData() const noexcept -> const Byte*;
+  [[nodiscard]] auto ReadDataAsString() const noexcept -> std::string;
 
   // return std::pair<How many bytes read, whether the client exists>
-  [[nodiscard]] auto Recv() -> std::pair<ssize_t, bool>;
+  [[nodiscard]] auto Receive() -> std::pair<ssize_t, bool>;
   void Send();
   void ClearReadBuffer() noexcept;
   void ClearWriteBuffer() noexcept;

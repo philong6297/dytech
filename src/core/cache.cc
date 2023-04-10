@@ -65,7 +65,7 @@ Cache::~Cache() = default;
 auto Cache::TryLoad(
   const std::string& resource_url,
   DynamicByteArray& destination) -> bool {
-  // TODO(longlp): Why do we use shared here
+  // TODO(longlp): Try to use unique
   std::shared_lock<std::shared_mutex> lock(mtx_);
   auto iter = mapping_.find(resource_url);
   if (iter != mapping_.end()) {
@@ -82,7 +82,7 @@ auto Cache::TryLoad(
 auto Cache::TryInsert(
   const std::string& resource_url,
   const DynamicByteArray& source) -> bool {
-  // TODO(longlp): Why do we use unique here
+  // TODO(longlp): Try to use unique
   std::unique_lock<std::shared_mutex> lock(mtx_);
 
   // already exists

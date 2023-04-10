@@ -79,8 +79,8 @@ TEST_CASE("[core/connection]") {
       }
 
       // send a message to server
-      client_connection.WriteToWriteBuffer(client_message);
-      CHECK(client_connection.GetWriteBufferSize() == client_message.size());
+      client_connection.Write(client_message);
+      CHECK(client_connection.GetWriteSize() == client_message.size());
       client_connection.Send();
       fmt::print("client: client msg sent\n");
       {
@@ -96,11 +96,12 @@ TEST_CASE("[core/connection]") {
       }
 
       // recv a message from server
-      auto [read, exit] = client_connection.Recv();
+      auto [read, exit] = client_connection.Receive();
       CHECK(read == std::ssize(server_message));
       // the server should not exit yet due to sleep
       CHECK(!exit);
-      CHECK(client_connection.ReadAsString() == std::string(server_message));
+      CHECK(
+        client_connection.ReadDataAsString() == std::string(server_message));
       fmt::print("client: client finished\n");
       {
         client_finished = true;
@@ -132,15 +133,15 @@ TEST_CASE("[core/connection]") {
     fmt::print("server: client msg sent\n");
 
     // recv a message from client
-    auto [read, exit] = connected_conn.Recv();
+    auto [read, exit] = connected_conn.Receive();
     CHECK(read == std::ssize(client_message));
     // the client is still wait for listening the message from server
     // it should not be exited yet
     CHECK(!exit);
-    CHECK(connected_conn.GetReadBufferSize() == client_message.size());
+    CHECK(connected_conn.GetReadSize() == client_message.size());
 
     // send a message to client
-    connected_conn.WriteToWriteBuffer(server_message);
+    connected_conn.Write(server_message);
     connected_conn.Send();
     fmt::print("server: server msg sent\n");
     {

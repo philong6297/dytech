@@ -41,44 +41,44 @@ auto Connection::FindAndPopTill(const std::string& target)
   return read_buffer_->FindAndPopTill(target);
 }
 
-auto Connection::GetReadBufferSize() const noexcept -> size_t {
+auto Connection::GetReadSize() const noexcept -> size_t {
   return read_buffer_->Size();
 }
 
-auto Connection::GetWriteBufferSize() const noexcept -> size_t {
+auto Connection::GetWriteSize() const noexcept -> size_t {
   return write_buffer_->Size();
 }
 
-void Connection::WriteToReadBuffer(const Byte* buf, size_t size) {
-  read_buffer_->AppendUnsafe(buf, size);
+void Connection::ReadUnsafe(const Byte* buf, size_t size) {
+  read_buffer_->PushBackUnsafe(buf, size);
 }
 
-void Connection::WriteToWriteBuffer(const Byte* buf, size_t size) {
-  write_buffer_->AppendUnsafe(buf, size);
+void Connection::WriteUnsafe(const Byte* buf, size_t size) {
+  write_buffer_->PushBackUnsafe(buf, size);
 }
 
-void Connection::WriteToReadBuffer(const std::string& str) {
-  read_buffer_->Append(str);
+void Connection::Read(const std::string& str) {
+  read_buffer_->PushBack(str);
 }
 
-void Connection::WriteToWriteBuffer(const std::string& str) {
-  write_buffer_->Append(str);
+void Connection::Write(const std::string& str) {
+  write_buffer_->PushBack(str);
 }
 
-void Connection::WriteToWriteBuffer(DynamicByteArray&& other_buf) {
-  write_buffer_->Append(std::move(other_buf));
+void Connection::Write(DynamicByteArray&& other_buf) {
+  write_buffer_->PushBack(std::move(other_buf));
 }
 
-auto Connection::Read() const noexcept -> const Byte* {
+auto Connection::ReadData() const noexcept -> const Byte* {
   return read_buffer_->Data();
 }
 
-auto Connection::ReadAsString() const noexcept -> std::string {
+auto Connection::ReadDataAsString() const noexcept -> std::string {
   auto str_view = read_buffer_->ToStringView();
   return {str_view.begin(), str_view.end()};
 }
 
-auto Connection::Recv() -> std::pair<ssize_t, bool> {
+auto Connection::Receive() -> std::pair<ssize_t, bool> {
   // read all available bytes, since Edge-trigger
   ssize_t read = 0;
   FixedByteArray<kBufferSize + 1> buf{};
@@ -88,7 +88,7 @@ auto Connection::Recv() -> std::pair<ssize_t, bool> {
     ssize_t curr_read = recv(GetFd(), buf.data(), kBufferSize, 0);
     if (curr_read > 0) {
       read += curr_read;
-      WriteToReadBuffer(buf.data(), narrow_cast<size_t>(curr_read));
+      ReadUnsafe(buf.data(), narrow_cast<size_t>(curr_read));
       buf.fill(0);
       continue;
     }
@@ -111,18 +111,15 @@ auto Connection::Recv() -> std::pair<ssize_t, bool> {
     }
 
     Log<LogLevel::kError>(
-      fmt::format("HandleConnection: recv() error code {}", errno));
+      fmt::format("HandleConnection: Receive() error code {}", errno));
     return {read, true};
   }
   return {read, false};
 }
 
 void Connection::Send() {
-  const auto to_write = narrow_cast<ssize_t>(GetWriteBufferSize());
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
-  const Byte* buf = write_buffer_->Data();
-#pragma GCC diagnostic pop
+  const auto to_write = narrow_cast<ssize_t>(GetWriteSize());
+  const Byte* buf     = write_buffer_->Data();
   for (ssize_t curr_write = 0; curr_write < to_write;) {
     auto write = send(
       GetFd(),

@@ -36,12 +36,13 @@ find_package(fmt CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Catch2 3 CONFIG REQUIRED)
 find_package(Microsoft.GSL CONFIG REQUIRED)
+find_package(cxxopts CONFIG REQUIRED)
 
 add_subdirectory(${LONGLP_PROJECT_SRC_DIR})
 
-# TODO(longlp): recover these
+add_subdirectory(${LONGLP_PROJECT_DEMO_DIR})
 
-# add_subdirectory(${LONGLP_PROJECT_DEMO_DIR})
+# TODO(longlp): recover these
 
 # add_subdirectory(${LONGLP_PROJECT_BENCHMARK_DIR})
 

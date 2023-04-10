@@ -29,17 +29,17 @@ class Buffer {
   DISALLOW_MOVE(Buffer);
   DEFAULT_COPY(Buffer);
 
-  void AppendUnsafe(const Byte* data, size_t size);
+  void PushBackUnsafe(const Byte* data, size_t size);
 
-  void Append(const std::string& str);
+  void PushBack(const std::string& str);
 
-  void Append(DynamicByteArray&& other_buffer);
+  void PushBack(DynamicByteArray&& other_buffer);
 
-  void AppendHeadUnsafe(const Byte* data, size_t size);
+  void PushFrontUnsafe(const Byte* data, size_t size);
 
-  void AppendHead(DynamicByteArray&& other_buffer);
+  void PushFront(DynamicByteArray&& other_buffer);
 
-  void AppendHead(const std::string& str);
+  void PushFront(const std::string& str);
 
   [[nodiscard]] auto
   FindAndPopTill(const std::string& target) -> std::optional<std::string>;

@@ -48,7 +48,7 @@ Trim(std::string_view str, std::string_view delim) noexcept -> std::string;
 [[nodiscard]] auto
 IsDirectoryExists(std::string_view directory_path) noexcept -> bool;
 
-[[nodiscard]] auto IsCgiRequest(std::string_view resource_url) noexcept -> bool;
+[[nodiscard]] auto IsCGIRequest(std::string_view resource_url) noexcept -> bool;
 
 [[nodiscard]] auto IsFileExists(std::string_view file_path) noexcept -> bool;
 

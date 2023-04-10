@@ -27,7 +27,7 @@ Poller::Poller(uint64_t poll_size) :
   if (poll_fd_ == -1) {
     perror("Poller: epoll_create1() error");
     // TODO(longlp): It is not thread-safe
-    exit(EXIT_FAILURE);
+    std::exit(EXIT_FAILURE);
   }
 }
 
@@ -50,7 +50,7 @@ void Poller::AddConnection(Connection* conn) const {
   if (ret_val == -1) {
     perror("Poller: epoll_ctl add error");
     // TODO(longlp): It is not thread-safe
-    exit(EXIT_FAILURE);
+    std::exit(EXIT_FAILURE);
   }
 }
 
@@ -63,7 +63,7 @@ auto Poller::Poll(int timeout) -> std::vector<Connection*> {
   if (ready == -1) {
     perror("Poller: Poll() error");
     // TODO(longlp): It is not thread-safe
-    exit(EXIT_FAILURE);
+    std::exit(EXIT_FAILURE);
   }
 
   std::vector<Connection*> events_happen;

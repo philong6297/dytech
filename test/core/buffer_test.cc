@@ -35,9 +35,9 @@ TEST_CASE("[core/buffer]") {
       buff_2.emplace_back(c);
     }
 
-    buf.AppendUnsafe(buff_1.data(), buff_1.size());
+    buf.PushBackUnsafe(buff_1.data(), buff_1.size());
     CHECK(buf.ToStringView() == msg1);
-    buf.AppendHeadUnsafe(buff_2.data(), buff_2.size());
+    buf.PushFrontUnsafe(buff_2.data(), buff_2.size());
     const auto together = std::string(msg2) + std::string(msg1);
     CHECK(buf.ToStringView() == together);
     buf.Clear();
@@ -47,9 +47,9 @@ TEST_CASE("[core/buffer]") {
   SECTION("appending std::string into buffer from both side") {
     const std::string msg1 = "Greeting from beginning!";
     const std::string msg2 = "Farewell from end~";
-    buf.AppendHead(msg1);
+    buf.PushFront(msg1);
     CHECK(buf.ToStringView() == msg1);
-    buf.Append(msg2);
+    buf.PushBack(msg2);
     const std::string together = msg1 + msg2;
     CHECK(buf.ToStringView() == together);
     buf.Clear();
@@ -64,8 +64,8 @@ TEST_CASE("[core/buffer]") {
       "Accept-Language: en-us\r\n"
       "\r\n";
     const std::string next_msg = "Something belongs to next message";
-    buf.Append(msg);
-    buf.Append(next_msg);
+    buf.PushBack(msg);
+    buf.PushBack(next_msg);
     auto op_str = buf.FindAndPopTill("\r\n\r\n");
     CHECK((op_str.has_value() && op_str.value() == msg));
     CHECK(buf.ToStringView() == next_msg);

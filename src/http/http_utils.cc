@@ -152,7 +152,7 @@ auto IsDirectoryExists(const std::string_view directory_path) noexcept -> bool {
   return std::filesystem::is_directory(directory_path);
 }
 
-auto IsCgiRequest(const std::string_view resource_url) noexcept -> bool {
+auto IsCGIRequest(const std::string_view resource_url) noexcept -> bool {
   return std::search(
            resource_url.begin(),
            resource_url.end(),

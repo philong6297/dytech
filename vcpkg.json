@@ -5,6 +5,7 @@
   "dependencies": [
     "fmt",
     "catch2",
-    "ms-gsl"
+    "ms-gsl",
+    "cxxopts"
   ]
 }

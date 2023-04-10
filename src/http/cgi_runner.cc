@@ -24,8 +24,6 @@
 namespace longlp::http {
 
 namespace {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
 
 auto BuildArgv(
   const std::vector<std::string>& cgi_arguments,
@@ -62,14 +60,12 @@ void DeleteArgv(owner<char**> argv, size_t size) {
   delete argv;
 }
 
-#pragma GCC diagnostic pop
-
 }    // namespace
 
 // static
 auto CGIRunner::ParseCGIRunner(const std::string_view resource_url) noexcept
   -> CGIRunner {
-  if (resource_url.empty() || !IsCgiRequest(resource_url)) {
+  if (resource_url.empty() || !IsCGIRequest(resource_url)) {
     return MakeInvalidCGIRunner();
   }
   // find the first & after the cgi-bin/ to fetch out cgi program path
@@ -135,7 +131,7 @@ auto CGIRunner::Run() -> DynamicByteArray {
       perror("fail to execve()");
       DeleteArgv(argv, cgi_arguments_.size() + 2U);
       // TODO(longlp): not thread-safe
-      exit(1);    // exit child process
+      std::exit(EXIT_FAILURE);    // exit child process
     }
   }
   else {
