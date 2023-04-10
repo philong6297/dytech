@@ -5,14 +5,14 @@
 #include <system_error>
 
 #include "core/server.h"
-#include "http/cgier.h"
+#include "http/cgi_runner.h"
+#include "http/constants.h"
 #include "http/header.h"
-#include "http/http_utils.h"
 #include "http/request.h"
 #include "http/response.h"
 #include "log/logger.h"
 
-namespace longlp::HTTP {
+namespace longlp::http {
 
 void ProcessHttpRequest(
   const std::string& serving_directory,
@@ -47,7 +47,7 @@ void ProcessHttpRequest(
       Log<LogLevel::kInfo>(resource_full_path);
       if (IsCgiRequest(resource_full_path)) {
         // dynamic CGI request
-        Cgier cgier = Cgier::ParseCgier(resource_full_path);
+        CGIRunner cgier = CGIRunner::ParseCGIRunner(resource_full_path);
         if (!cgier.IsValid()) {
           auto response = Response::Make400Response();
           no_more_parse = true;
@@ -65,7 +65,7 @@ void ProcessHttpRequest(
             auto response =
               Response::Make200Response(request.ShouldClose(), std::nullopt);
             response.ChangeHeader(
-              HEADER_CONTENT_LENGTH,
+              kHeaderContentLength,
               std::to_string(cgi_result.size()));
             no_more_parse = request.ShouldClose();
             response.Serialize(response_buf);
@@ -88,7 +88,7 @@ void ProcessHttpRequest(
           response.Serialize(response_buf);
           no_more_parse = request.ShouldClose();
           DynamicByteArray cache_buf;
-          if (request.GetMethod() == Method::GET) {
+          if (request.GetMethod() == Method::kGET) {
             // only concern about carrying content when GET request
             bool resource_cached =
               cache->TryLoad(resource_full_path, cache_buf);
@@ -120,7 +120,7 @@ void ProcessHttpRequest(
     return;
   }
 }
-}    // namespace longlp::HTTP
+}    // namespace longlp::http
 
 int main(int argc, char* argv[]) {
   const std::string usage =
@@ -145,7 +145,7 @@ int main(int argc, char* argv[]) {
     address = {"127.0.0.1", port};
     if (argc == 3) {
       directory = argv[2];
-      if (!longlp::HTTP::IsDirectoryExists(directory)) {
+      if (!longlp::http::IsDirectoryExists(directory)) {
         std::cout << "directory error\n";
         std::cout << usage;
         exit(EXIT_FAILURE);
@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
   auto cache = std::make_shared<longlp::Cache>();
   http_server
     .OnHandle([&](longlp::Connection* client_conn) {
-      longlp::HTTP::ProcessHttpRequest(directory, cache, client_conn);
+      longlp::http::ProcessHttpRequest(directory, cache, client_conn);
     })
     .Begin();
   return 0;

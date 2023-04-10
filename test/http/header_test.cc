@@ -5,15 +5,27 @@
  *
  *
  *
+
+
+
+ * * * *
  * implementation file should be compatible to compile in C++
- * program on
  *
+ * program
+
+ * * on
+
+ * *
 
 
  * * * Linux
  * @init_date Feb 1 2023
  *
- * This is the unit test file for
+ * This is
+ * the unit
+ * test
+ * file
+ * for
  *
 
  * *
@@ -23,10 +35,10 @@
 #include "http/header.h"
 
 #include <catch2/catch_test_macros.hpp>
-#include "http/http_utils.h"
+#include "http/constants.h"
 
-using longlp::HTTP::CRLF;
-using longlp::HTTP::Header;
+using longlp::http::Header;
+using longlp::http::kCRLF;
 
 TEST_CASE("[http/header]") {
   SECTION("normal constructor method for header") {
@@ -56,6 +68,6 @@ TEST_CASE("[http/header]") {
     CHECK(!h2.IsValid());
 
     std::string serialized = h1.Serialize();
-    CHECK(serialized == (valid_header_line + CRLF));
+    CHECK(serialized == (valid_header_line + kCRLF));
   }
 }

@@ -25,7 +25,7 @@ Looper::~Looper() = default;
 void Looper::StartLoop() {
   while (!exit_) {
     auto ready_connections = poller_->Poll(kTimeoutMs);
-    fmt::print("ready connection size: {}\n", ready_connections.size());
+    // fmt::print("ready connection size: {}\n", ready_connections.size());
     for (auto& connection : ready_connections) {
       connection->Start();
     }

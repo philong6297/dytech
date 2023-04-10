@@ -1,18 +1,22 @@
 /**
  * @file response.h
  * @author Yukun J
- * @expectation this header file
+ * @expectation this header
+ * file
 
 
 
 
- * * *
+
+ * * * *
  * *
 
  * * *
 
 
- * * * should be compatible to compile in C++
+ * * * should be compatible to compile in
+ * C++
+ *
  * program
  * on
 
@@ -25,8 +29,10 @@
 
  * * Dec
 
- * * 31 2022
- *
+ * *
+ * 31 2022
+
+ * *
  * This
  * is a
  * header
@@ -34,7 +40,9 @@
  * * file
  * implementing
 
- * * the HTTP
+ * * the
+ * HTTP
+ *
  * response
 
  */
@@ -48,13 +56,15 @@
 
 #include "core/typedefs.h"
 
-namespace longlp::HTTP {
+namespace longlp::http {
 
 class Header;
 
 /**
  * The HTTP Response class
  * use vector of char to be able to
+ *
+ *
  *
  *
  * contain
@@ -102,6 +112,6 @@ class Response {
   DynamicByteArray body_;
 };
 
-}    // namespace longlp::HTTP
+}    // namespace longlp::http
 
 #endif    // HTTP_RESPONSE_H_

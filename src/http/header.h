@@ -3,22 +3,30 @@
  * @author Yukun J
  * @expectation this header file
  *
- *
- * should
+
+ * *
+
+ * * should
  * be compatible to compile in C++
  * program on Linux
+ *
+ *
  * @init_date
 
 
  * * * Dec 29
  * 2022
  *
- * This is a header file implementing the HTTP Header
+ * This is a header file implementing
+
+ * * the HTTP Header
 
  * *
  * class, which
  * is
- * essentially a key-value pair
+ * essentially a key-value
+ * pair
+
  */
 
 #ifndef HTTP_HEADER_H_
@@ -27,7 +35,7 @@
 #include <sstream>
 #include <string>
 
-namespace longlp::HTTP {
+namespace longlp::http {
 
 /**
  * The HTTP Header in the form of string "key : value"
@@ -58,6 +66,6 @@ class Header {
   bool valid_{true};
 };
 
-}    // namespace longlp::HTTP
+}    // namespace longlp::http
 
 #endif    // HTTP_HEADER_H_

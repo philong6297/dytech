@@ -124,7 +124,7 @@ auto Socket::AcceptClientAddress(NetAddress& client_address) const -> int {
     fd_,
     client_address.address_data(),
     client_address.address_data_length(),
-    SOCK_CLOEXEC);
+    SOCK_CLOEXEC | SOCK_NONBLOCK);
   if (client_fd == -1) {
     // under high pressure, accept might fail.
     // but server should not fail at this time

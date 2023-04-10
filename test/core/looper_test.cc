@@ -15,6 +15,7 @@
 #include <fmt/format.h>
 #include <catch2/catch_test_macros.hpp>
 
+#include "base/chrono.h"
 #include "base/utils.h"
 #include "core/connection.h"
 #include "core/net_address.h"
@@ -44,26 +45,27 @@ TEST_CASE("[core/looper]") {
     constexpr auto kClientNum = 3U;
 
     std::mutex mtx;
-    std::atomic<bool> looper_exited{false};
+    std::atomic<bool> looper_started{false};
     std::condition_variable cv;
 
     std::vector<std::thread> threads;
     threads.reserve(kClientNum);
     for (auto i = 0U; i < kClientNum; ++i) {
-      threads.emplace_back([i, &server_address, &mtx, &cv, &looper_exited]() {
+      threads.emplace_back([i, &server_address, &mtx, &cv, &looper_started]() {
         auto client_socket = Socket();
         client_socket.ConnectToServer(server_address);
         client_socket.SetNonBlocking();
-        // fmt::print(
-        //   "client {} with fd {} created connection\n",
-        //   i,
-        //   client_socket.GetFd());
-        // // keep the connection alive until looper exit
-        // {
-        //   std::unique_lock<std::mutex> lock(mtx);
-        //   cv.wait(lock, [&]() -> bool { return looper_exited; });
-        // }
-        // fmt::print("client {} exit\n", i);
+        fmt::print(
+          "client {} with fd {} created connection\n",
+          i,
+          client_socket.GetFd());
+
+        // keep the connection alive until looper exit
+        {
+          std::unique_lock<std::mutex> lock(mtx);
+          cv.wait(lock, [&]() -> bool { return looper_started; });
+        }
+        fmt::print("client {} exit\n", i);
       });
     }
 
@@ -87,22 +89,28 @@ TEST_CASE("[core/looper]") {
     }
 
     // the looper execute each client's callback once, upon their exit
-    std::thread runner([&]() { looper.StartLoop(); });
+    std::thread runner([&]() {
+      {
+        looper_started = true;
+        cv.notify_all();
+      }
+      looper.StartLoop();
+    });
 
-    // let the looper runs for maximum of 10s
+    // let the looper runs for maximum of 5s
     {
       std::unique_lock<std::mutex> lock(mtx);
-      cv.wait_for(lock, 10s, [&]() -> bool {
+      cv.wait_until(lock, longlp::system_clock::now() + 5s, [&]() -> bool {
         return reached_to_client[0] && reached_to_client[1] &&
                reached_to_client[2];
       });
     }
 
     looper.Exit();
-    {
-      looper_exited = true;
-      cv.notify_all();
-    }
+    // {
+    //   looper_exited = true;
+    //   cv.notify_all();
+    // }
 
     // each client's callback should have already been executed
     for (auto i = 0U; i < kClientNum; ++i) {

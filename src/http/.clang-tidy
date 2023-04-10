@@ -1,0 +1,8 @@
+---
+Checks: >
+  -cppcoreguidelines-pro-type-vararg,
+  -hicpp-vararg
+InheritParentConfig: true
+CheckOptions:
+  - key: hicpp-signed-bitwise.IgnorePositiveIntegerLiterals
+    value: true

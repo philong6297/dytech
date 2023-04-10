@@ -4,16 +4,28 @@
  * @expectation this
  *
  *
+
  *
- * implementation file should be compatible to compile in C++
- * program on
+ * *
+
+
+ * * * implementation file should be compatible to compile in C++
  *
+ *
+ * program
+ * on
+
+ * *
 
 
  * * * Linux
  * @init_date Feb 1 2023
  *
- * This is the unit test file for
+ * This is
+ * the
+ * unit test
+ * file
+ * for
  *
 
  * *
@@ -23,12 +35,12 @@
 #include "http/request.h"
 
 #include <catch2/catch_test_macros.hpp>
+#include "http/constants.h"
 #include "http/header.h"
-#include "http/http_utils.h"
 
-using longlp::HTTP::Method;
-using longlp::HTTP::Request;
-using longlp::HTTP::Version;
+using longlp::http::Method;
+using longlp::http::Request;
+using longlp::http::Version;
 
 TEST_CASE("[http/request]") {
   SECTION("valid & invalid parsing of a request from string") {
@@ -77,8 +89,8 @@ TEST_CASE("[http/request]") {
       "\r\n";
     Request request_4{request_4_str};
     CHECK(request_4.IsValid());
-    CHECK(request_4.GetMethod() == Method::GET);
-    CHECK(request_4.GetVersion() == Version::HTTP_1_1);
+    CHECK(request_4.GetMethod() == Method::kGET);
+    CHECK(request_4.GetVersion() == Versionhttp_1_1);
 
     /* connection to close request */
     std::string request_5_str =
@@ -89,7 +101,7 @@ TEST_CASE("[http/request]") {
       "\r\n";
     Request request_5{request_5_str};
     CHECK(request_5.IsValid());
-    CHECK(request_5.GetMethod() == Method::HEAD);
+    CHECK(request_5.GetMethod() == Method::kHEAD);
     CHECK(request_5.ShouldClose());
 
     /* connection to kepp alive request */

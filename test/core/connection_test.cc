@@ -12,6 +12,7 @@
 #include <string>
 #include <thread>
 
+#include <fmt/format.h>
 #include <catch2/catch_test_macros.hpp>
 
 #include "core/net_address.h"
@@ -60,6 +61,7 @@ TEST_CASE("[core/connection]") {
 
     std::mutex mtx;
     std::condition_variable cv;
+    std::atomic<bool> client_connection_exists{false};
     std::atomic<bool> client_msg_sent{false};
     std::atomic<bool> server_msg_sent{false};
     std::atomic<bool> client_finished{false};
@@ -71,11 +73,16 @@ TEST_CASE("[core/connection]") {
       client_socket->SetNonBlocking();
       Connection client_connection(std::move(client_socket));
 
+      {
+        client_connection_exists = true;
+        cv.notify_all();
+      }
+
       // send a message to server
       client_connection.WriteToWriteBuffer(client_message);
       CHECK(client_connection.GetWriteBufferSize() == client_message.size());
       client_connection.Send();
-      // fmt::print("client: client msg sent\n");
+      fmt::print("client: client msg sent\n");
       {
         client_msg_sent = true;
         cv.notify_all();
@@ -84,7 +91,7 @@ TEST_CASE("[core/connection]") {
       // wait for server msg
       {
         std::unique_lock<std::mutex> lock(mtx);
-        // fmt::print("client: wait for server msg\n");
+        fmt::print("client: wait for server msg\n");
         cv.wait(lock, [&]() -> bool { return server_msg_sent; });
       }
 
@@ -94,12 +101,19 @@ TEST_CASE("[core/connection]") {
       // the server should not exit yet due to sleep
       CHECK(!exit);
       CHECK(client_connection.ReadAsString() == std::string(server_message));
-      // fmt::print("client: client finished\n");
+      fmt::print("client: client finished\n");
       {
         client_finished = true;
         cv.notify_all();
       }
     });
+
+    // make sure client connection exists so the accept operation wont block
+    {
+      std::unique_lock<std::mutex> lock(mtx);
+      fmt::print("server: wait for client connection\n");
+      cv.wait(lock, [&]() -> bool { return client_connection_exists; });
+    }
 
     NetAddress client_address;
     auto connected_sock = std::make_unique<Socket>(
@@ -111,11 +125,11 @@ TEST_CASE("[core/connection]") {
     // wait for client msg
     {
       std::unique_lock<std::mutex> lock(mtx);
-      // fmt::print("server: wait for client msg\n");
+      fmt::print("server: wait for client msg\n");
       cv.wait(lock, [&]() -> bool { return client_msg_sent; });
     }
 
-    // fmt::print("server: client msg sent\n");
+    fmt::print("server: client msg sent\n");
 
     // recv a message from client
     auto [read, exit] = connected_conn.Recv();
@@ -128,7 +142,7 @@ TEST_CASE("[core/connection]") {
     // send a message to client
     connected_conn.WriteToWriteBuffer(server_message);
     connected_conn.Send();
-    // fmt::print("server: server msg sent\n");
+    fmt::print("server: server msg sent\n");
     {
       server_msg_sent = true;
       cv.notify_all();
@@ -137,7 +151,7 @@ TEST_CASE("[core/connection]") {
     // wait for client finish before exit
     {
       std::unique_lock<std::mutex> lock(mtx);
-      // fmt::print("server: wait for client finish\n");
+      fmt::print("server: wait for client finish\n");
       cv.wait(lock, [&]() -> bool { return client_finished; });
     }
 

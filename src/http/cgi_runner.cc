@@ -1,126 +1,80 @@
-/**
- * @file cgier.cpp
- * @author Yukun J
- * @expectation this header file
+// Copyright 2023 Phi-Long Le. All rights reserved.
+// Use of this source code is governed by a MIT license that can be
+// found in the LICENSE file.
 
- *
-
-
- * * * *
-
-
-
- * * * *
- * should be compatible to compile in C++
- * program on
- *
- * Linux
-
-
- * * *
- *
- *
- * @init_date
- * Jan
-
- * * 13 2023
- *
- * This is an
- *
- * implementation
-
- * * file
- *
- *
- * implementing the CGIer
- * that
- *
- *
- * forks
- * another
- *
- * process
- * to run the
- * cgi
-
- * * program commanded
- * by the
- *
- * client
- *
- *
- * through http
- * request
- * in
- * a
- * RESTful
- *
- * style
- */
-
-#include "http/cgier.h"
+#include "http/cgi_runner.h"
 
 #include <fcntl.h>
 #include <sys/wait.h>
-
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
+#include <string_view>
 #include <thread>
 
+#include <fmt/format.h>
+
+#include "http/constants.h"
 #include "http/http_utils.h"
 
-namespace longlp::HTTP {
+namespace longlp::http {
 
-auto Cgier::ParseCgier(const std::string& resource_url) noexcept -> Cgier {
+// static
+auto CGIRunner::ParseCGIRunner(const std::string_view resource_url) noexcept
+  -> CGIRunner {
   if (resource_url.empty() || !IsCgiRequest(resource_url)) {
-    return MakeInvalidCgier();
+    return MakeInvalidCGIRunner();
   }
   // find the first & after the cgi-bin/ to fetch out cgi program path
-  auto cgi_pos       = resource_url.find(CGI_BIN);
-  auto cgi_separator = resource_url.find(PARAMETER_SEPARATOR, cgi_pos);
-  auto cgi_path      = resource_url.substr(0, cgi_separator);
-  auto arguments =
-    Split(resource_url.substr(cgi_separator + 1), PARAMETER_SEPARATOR);
-  return Cgier(cgi_path, arguments);
+  const auto cgi_pos       = resource_url.find(kCGIFolderName);
+  const auto cgi_separator = resource_url.find(kSeparator, cgi_pos);
+  const auto cgi_path      = resource_url.substr(0, cgi_separator);
+  const auto arguments =
+    Split(resource_url.substr(cgi_separator + 1), kSeparator);
+  return CGIRunner(cgi_path, arguments);
 }
 
-auto Cgier::MakeInvalidCgier() noexcept -> Cgier {
-  Cgier invalid_cgier{std::string(), std::vector<std::string>()};
+// static
+auto CGIRunner::MakeInvalidCGIRunner() noexcept -> CGIRunner {
+  CGIRunner invalid_cgier{std::string(), std::vector<std::string>()};
   invalid_cgier.valid_ = false;
   return invalid_cgier;
 }
 
-Cgier::Cgier(
-  const std::string& path,
+CGIRunner::CGIRunner(
+  const std::string_view path,
   const std::vector<std::string>& arguments) noexcept :
   cgi_program_path_(path),
-  cgi_arguments_(arguments),
-  valid_(true) {}
+  cgi_arguments_(arguments) {}
 
-auto Cgier::Run() -> DynamicByteArray {
+auto CGIRunner::Run() -> DynamicByteArray {
   assert(valid_);
   DynamicByteArray cgi_result;
-  // unique shared filename within one Cgier
+  // unique shared filename within one CGIRunner
   // when communicating between parent and child
-  std::stringstream ssr;
-  ssr << CGI_PREFIX << UNDERSCORE << std::this_thread::get_id() << ".txt";
-  std::string shared_file_name = ssr.str();
-  int fd                       = open(
+  const auto shared_file_name = fmt::format(
+    "{cgi_prefix}{underscore}{thread_id}.txt",
+    fmt::arg("cgi_prefix", kCGIPrefix),
+    fmt::arg("underscore", kUnderscore),
+    fmt::arg("thread_id", std::this_thread::get_id()));
+
+  int fd = open(
     shared_file_name.c_str(),
-    O_RDWR | O_APPEND | O_CREAT,
-    READ_WRITE_PERMISSION);
+    O_RDWR | O_APPEND | O_CREAT | O_CLOEXEC,
+    kReadWritePermission);
   if (fd == -1) {
-    std::string error = "fail to create/open the file " + shared_file_name;
+    const auto error =
+      fmt::format("fail to create/open the file {}", shared_file_name);
     return {error.begin(), error.end()};
   }
   pid_t pid = fork();
   if (pid == -1) {
-    std::string error = "fail to fork()";
+    constexpr std::string_view error = "fail to fork()";
     return {error.begin(), error.end()};
   }
+
   if (pid == 0) {
     // child
 
@@ -136,13 +90,14 @@ auto Cgier::Run() -> DynamicByteArray {
       // only reach here when execve fails
       perror("fail to execve()");
       FreeArgumentList(cgi_argv);
+      // TODO(longlp): not thread-safe
       exit(1);    // exit child process
     }
   }
   else {
     // parent
     close(fd);
-    int status;
+    int status{};
     // wait and harvest child process
     if (waitpid(pid, &status, 0) == -1) {
       std::string error = "fail to harvest child by waitpid()";
@@ -151,20 +106,21 @@ auto Cgier::Run() -> DynamicByteArray {
     // load cgi result from the shared file
     LoadFile(shared_file_name, cgi_result);
     // clean it up by deleting shared file
-    DeleteFile(shared_file_name);
+    // TODO(longlp): check for return value
+    std::ignore = DeleteFile(shared_file_name);
   }
   return cgi_result;
 }
 
-auto Cgier::IsValid() const noexcept -> bool {
+auto CGIRunner::IsValid() const noexcept -> bool {
   return valid_;
 }
 
-auto Cgier::GetPath() const noexcept -> std::string {
+auto CGIRunner::GetPath() const noexcept -> std::string {
   return cgi_program_path_;
 }
 
-auto Cgier::BuildArgumentList() -> char** {
+auto CGIRunner::BuildArgumentList() -> char** {
   assert(!cgi_program_path_.empty());
   char** cgi_argv = (char**)calloc(cgi_arguments_.size() + 2, sizeof(char*));
   cgi_argv[0]     = (char*)calloc(cgi_program_path_.size() + 1, sizeof(char));
@@ -181,11 +137,11 @@ auto Cgier::BuildArgumentList() -> char** {
   return cgi_argv;
 }
 
-void Cgier::FreeArgumentList(char** arg_list) {
+void CGIRunner::FreeArgumentList(char** arg_list) {
   for (int i = 0; i < static_cast<int>(cgi_arguments_.size()) + 2; ++i) {
     free(arg_list[i]);
   }
   free(arg_list);
 }
 
-}    // namespace longlp::HTTP
+}    // namespace longlp::http
