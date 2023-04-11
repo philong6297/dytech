@@ -47,14 +47,16 @@
 
 ![Server Design](images/server_design.jpg)
 
-The above system architecture diagram briefly shows how the my project works in general:
+The diagram above presents an overview of my project's general functioning.
+Specifically, each **Connection** consists of a **Socket** and a **Buffer** for bytes input-output, and user callback functions are registered for each of these connections.
+The system is launched via an **Acceptor** comprising one acceptor connection: each new client is allocated a connection and assigned a workload synced with one of the **Loopers**.
 
-1. A **Connection** contains a **Socket** and a **Buffer** for bytes in-and-out. Users register a **callback** function for each connection.
-2. The system starts with an **Acceptor**, which contains one acceptor connection. It builds connection for each new client, and distribute the workload to one of the **Looper**s.
-3. Each **Poller** is associated with exactly one **Looper**. It does nothing but epoll, and returns a collection of event-ready connections back to the **Looper**.
-4. The **Looper** is the main brain of the system. It registers new client connection into the **Poller**, and upon the **Poller** returns back event-ready connections, it fetches their callback functions and execute them.
-5. The **ThreadPool** manages how many **Looper**s are there in the system to avoid over-subscription.
-6. Optionally there exists a **Cache** layer using LRU policy with tunable storage size parameters.
+Each **Poller** is bound to a single **Looper** and primarily handles `epoll`, returning a group of event-ready connections to its **Looper** counterpart.
+The **Looper** is the central decision-making entity of the system: it registers new client connections into the **Poller**, fetches their callback functions, and executes them.
+
+The **ThreadPool** governs the number of **Loopers** in the system, thereby preventing over-subscription.
+
+The **Cache** layer that employs an LRU policy, with adjustable storage size parameters.
 
 ## 3. **Building Project**
 
@@ -117,9 +119,11 @@ I adopt [Webbench](http://cs.uccs.edu/~cs526/webbench/webbench.htm) as the stres
   - Cache set to 100MB
 
 ### 4.2. **Result**
-- `tiny_index.html`
+
+- `tiny_index.html`<br>
 ![](images/tiny-no-cache.png)
-- `index.html`
+
+- `index.html`<br>
 ![](images/normal.png)
 
 ## 5. **About Limitations**
