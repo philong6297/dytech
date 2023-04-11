@@ -1,15 +1,29 @@
-# http-server
+<h1> http-server <h1>
 
-## Features
+## **Table of Contents**
+- [**Table of Contents**](#table-of-contents)
+- [1. **Features**](#1-features)
+  - [1.1. **Design Decision**](#11-design-decision)
+  - [1.2. **Development Decision**](#12-development-decision)
+- [2. **Server Design**](#2-server-design)
+- [3. **Building Project**](#3-building-project)
+- [4. **Benchmark**](#4-benchmark)
+  - [4.1. **Environment**](#41-environment)
+  - [4.2. **Result**](#42-result)
+- [5. **About Limitations**](#5-about-limitations)
+  - [5.1. **Missing features**](#51-missing-features)
+  - [5.2. **Code improvements**](#52-code-improvements)
 
-### **Design Decision**
+## 1. **Features**
+
+### 1.1. **Design Decision**
 - Set non-blocking socket and edge-trigger handling mode based on [C10K problem](http://www.kegel.com/c10k.html)
 - Implemented the Reactor pattern with thread pool management: **Reactor per thread**.
 - Support HTTP/1.1 GET/HEAD request & response.
 - Support dynamic CGI request & response.
-- Implemented Caching (LRU for now).
+- Implemented Caching (LRU for now) reduce server load and increase responsiveness.
 - Implemented asynchronous consumer-producer logging.
-### **Development Decision**
+### 1.2. **Development Decision**
 - **Environment**: Linux
 - **Compiler**:
   - LLVM/Clang 16
@@ -28,9 +42,9 @@
   - Command-line parsing with [cxxopts](https://github.com/jarro2783/cxxopts)
   - Use [Chromium's `base::NoDestructor`](/src/third_party/chromium/base/no_destructor.h) for wrapping function-local static variables.
 
-## **Server Design**
+## 2. **Server Design**
 
-![Server Design](image/server_design.jpg)
+![Server Design](images/server_design.jpg)
 
 The above system architecture diagram briefly shows how the my project works in general:
 
@@ -41,7 +55,7 @@ The above system architecture diagram briefly shows how the my project works in 
 5. The **ThreadPool** manages how many **Looper**s are there in the system to avoid over-subscription.
 6. Optionally there exists a **Cache** layer using LRU policy with tunable storage size parameters.
 
-## **Building Project**
+## 3. **Building Project**
 
 Make sure you have installed:
 - CMake (>= 3.23)
@@ -71,55 +85,58 @@ cmake --build . --config Release
 
 # Run test
 # There are several tests which relies on threads.
-# Therefore, we need to run in manually:
+# Therefore, we need to run manually:
 # build/test/xxx_test instead of the below command
 ctest -C Release -V
 ```
 
-## **Benchmark**
+## 4. **Benchmark**
 
 I adopt [Webbench](http://cs.uccs.edu/~cs526/webbench/webbench.htm) as the stress testing tool. This tool is stored under [benchmark/webbench](/benchmark/webbench/).
 
 ```bash
 # running the server first
 # pwd is project location
+# default address is http://127.0.0.1:8080
 ./build/demo/http-server/http_server --directory ./build/demo/http-server/pages
 
 # in another console host
 # Run 10000 clients in 10s
-./benchmark/webbench/webbench -c 10000 -t 10
+./benchmark/webbench/webbench -c 10000 -t 10 https://127.0.0.1:8080
 ```
 
-We performed benchmark testing on an Amazon AWS EC2 instance. The details are as follows:
+### 4.1. **Environment**
+- OS: Ubuntu 20.04
+- Intel® Xeon® Processor E3-1505M v5 (8 CPUs) ~ 2.8GHz
+- Memory: 16GB
+- Benchmark cases:
+  - Using 2 `index.html` in [demo/http-server/pages](/demo/http-server/pages/):
+    - `tiny_index.html`: 1KB
+    - `index.html`: 10MB
+  - Cache set to 100MB
 
-+ **Hardware**: m5.2xlarge instance on **Ubuntu 20.04 LTS** with **8** vCPUs, **32** GiB memory, **50** GiB root storage volume. (Be careful that vCPU is not real CPU core, by experiment `std::hardware_concurrency() = 2` in this case)
-+ **QPS**: **62.3**k (no cache) | **62.8**k (with cache)
+### 4.2. **Result**
+- `tiny_index.html`
+![](images/tiny-no-cache.png)
+- `index.html`
+![](images/normal.png)
 
-The performance improvement from **Cache** might not seem significant. Partly because disk I/O is getting faster nowadays, the cost of loading a small `index.html` might be smaller than the mutual exclusive operations in the **Cache**.
+## 5. **About Limitations**
+Due to the deadline, I cannot implement the following things:
+### 5.1. **Missing features**
+- Multipart data
+- Load balancing
+- Proactor pattern
+- Full HTTP/1.1 support<br>
+I have focused on the C10K solution. So there are only HEAD/GET implementation.
+- Database support<br>
+The performance improvement from **Cache** might not seem significant for me, due to I only implemented a really naive **LRU Cache**. I believe when database comes into play, the usage of the **Cache** layer will be more obvious.
+### 5.2. **Code improvements**
+- Build configuration for different options for benchmark-friendly purpose<br>
+Currently, due to time restriction, I cannot provide a proper build configuration. For example, toggle switch for turning on/off Cache.
+- Over-used of `mutex`. <br>
+Due to time limtation, I cannot implement a more elegant design and reduce the overhead of **C++ STL threading library**
+- Over-use of `fcntl` system calls.
+- Exception handling and thread safety.
 
-When database connector comes into play, the indispensability of the **Cache** layer will be more obvious.
-
-
-
-
-### Future Work
-This repo is under active development and maintainence. New features and fixes are updated periodically as time and skill permit.
-
-The followings are on the **TODO** list:
-
-- ✅ Support serving HTTP GET/HEAD Request & Response
-- ✅ Revise according to this [code review](https://codereview.stackexchange.com/questions/282220/tiny-network-web-framework-library-in-c) suggestions
-- ✅ Refactor the architecture into multiple Reactor mode to improve concurrency
-- ✅ Add performance testing benchmark
-- ✅ Add a Cache layer to reduce server load and increase responsiveness
-- ✅ Enable dynamic CGI request support
-- ✅ Support MacOS build compatability by kqueue
-- ✅ Complete unit testing coverage
-- ✅ Benchmark with other leading libraries
-- [ ] Profile Turtle's main runtime bottleneck
-- [ ] Review suggestions on [reddit](https://www.reddit.com/r/cpp/comments/10vrv4i/seeking_improve_advice_on_my_c_network_library/) are listed on issues to contemplate and experiment
-- ✅ Support asynchronous logging mechanism
-- [ ] Support timing each client connection and kills inactive ones
-- ✅ Support Database connection
-
-We also welcome new feature request. We will review them one by one, and priortize its implementation if applicable. Or direct pull request is also welcomed.
+These limitations have been already commented as `TODO(longlp)` in the source codes.

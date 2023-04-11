@@ -1,5 +1,5 @@
-CFLAGS?=	-Wall -Wno-unused-parameter -ggdb -W -O
-CC?=		gcc
+CFLAGS?=	-Wall -Wno-unused-parameter -ggdb -W -O3 -I/usr/include/tirpc/
+CC?=		clang
 LIBS?=
 LDFLAGS?=
 PREFIX?=	/usr/local
@@ -12,18 +12,18 @@ tags:  *.c
 	-ctags *.c
 
 install: webbench
-	install -s webbench $(DESTDIR)$(PREFIX)/bin	
-	install -m 644 webbench.1 $(DESTDIR)$(PREFIX)/man/man1	
+	install -s webbench $(DESTDIR)$(PREFIX)/bin
+	install -m 644 webbench.1 $(DESTDIR)$(PREFIX)/man/man1
 	install -d $(DESTDIR)$(PREFIX)/share/doc/webbench
 	install -m 644 debian/copyright $(DESTDIR)$(PREFIX)/share/doc/webbench
 	install -m 644 debian/changelog $(DESTDIR)$(PREFIX)/share/doc/webbench
 
 webbench: webbench.o Makefile
-	$(CC) $(CFLAGS) $(LDFLAGS) -o webbench webbench.o $(LIBS) 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o webbench webbench.o $(LIBS)
 
 clean:
 	-rm -f *.o webbench *~ core *.core tags
-	
+
 tar:   clean
 	-debian/rules clean
 	rm -rf $(TMPDIR)

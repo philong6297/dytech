@@ -13,8 +13,8 @@
  *    1 - benchmark failed (server is not on-line)
  *    2 - bad param
  *    3 - internal error, fork failed
- * 
- */ 
+ *
+ */
 #include "socket.c"
 #include <unistd.h>
 #include <sys/param.h>
@@ -77,7 +77,7 @@ static void build_request(const char *url);
 static void alarm_handler(int signal)
 {
    timerexpired=1;
-}	
+}
 
 static void usage(void)
 {
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
  {
 	  usage();
           return 2;
- } 
+ }
 
  while((opt=getopt_long(argc,argv,"912Vfrt:p:c:?h",long_options,&options_index))!=EOF )
  {
@@ -117,13 +117,13 @@ int main(int argc, char *argv[])
   {
    case  0 : break;
    case 'f': force=1;break;
-   case 'r': force_reload=1;break; 
+   case 'r': force_reload=1;break;
    case '9': http10=0;break;
    case '1': http10=1;break;
    case '2': http10=2;break;
    case 'V': printf(PROGRAM_VERSION"\n");exit(0);
-   case 't': benchtime=atoi(optarg);break;	     
-   case 'p': 
+   case 't': benchtime=atoi(optarg);break;
+   case 'p':
 	     /* proxy server parsing server:port */
 	     tmp=strrchr(optarg,':');
 	     proxyhost=optarg;
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
    case 'c': clients=atoi(optarg);break;
   }
  }
- 
+
  if(optind==argc) {
                       fprintf(stderr,"webbench: Missing URL!\n");
 		      usage();
@@ -217,7 +217,7 @@ void build_request(const char *url)
 	  case METHOD_OPTIONS: strcpy(request,"OPTIONS");break;
 	  case METHOD_TRACE: strcpy(request,"TRACE");break;
   }
-		  
+
   strcat(request," ");
 
   if(NULL==strstr(url,"://"))
@@ -231,7 +231,7 @@ void build_request(const char *url)
 	 exit(2);
   }
   if(proxyhost==NULL)
-	   if (0!=strncasecmp("http://",url,7)) 
+	   if (0!=strncasecmp("http://",url,7))
 	   { fprintf(stderr,"\nOnly HTTP protocol is directly supported, set --proxy for others.\n");
              exit(2);
            }
@@ -286,20 +286,20 @@ void build_request(const char *url)
   if(http10>1)
 	  strcat(request,"Connection: close\r\n");
   /* add empty line at end */
-  if(http10>0) strcat(request,"\r\n"); 
+  if(http10>0) strcat(request,"\r\n");
   // printf("Req=%s\n",request);
 }
 
 /* vraci system rc error kod */
 static int bench(void)
 {
-  int i,j,k;	
+  int i,j,k;
   pid_t pid=0;
   FILE *f;
 
   /* check avaibility of target server */
   i=Socket(proxyhost==NULL?host:proxyhost,proxyport);
-  if(i<0) { 
+  if(i<0) {
 	   fprintf(stderr,"\nConnect to server failed. Aborting benchmark.\n");
            return 1;
          }
@@ -360,7 +360,7 @@ static int bench(void)
   } else
   {
 	  f=fdopen(mypipe[0],"r");
-	  if(f==NULL) 
+	  if(f==NULL)
 	  {
 		  perror("open pipe for reading failed.");
 		  return 3;
@@ -386,7 +386,7 @@ static int bench(void)
 	  }
 	  fclose(f);
 
-  printf("\nSpeed=%d pages/min, %d bytes/sec.\nRequests: %d susceed, %d failed.\n",
+  printf("\nSpeed=%d pages/min, %d bytes/sec.\nRequests: %d request/sec, %d failed.\n",
 		  (int)((speed+failed)/(benchtime/60.0f)),
 		  (int)(bytes/(float)benchtime),
 		  speed,
@@ -421,21 +421,21 @@ void benchcore(const char *host,const int port,const char *req)
        }
        return;
     }
-    s=Socket(host,port);                          
-    if(s<0) { failed++;continue;} 
+    s=Socket(host,port);
+    if(s<0) { failed++;continue;}
     if(rlen!=write(s,req,rlen)) {failed++;close(s);continue;}
-    if(http10==0) 
+    if(http10==0)
 	    if(shutdown(s,1)) { failed++;close(s);continue;}
-    if(force==0) 
+    if(force==0)
     {
             /* read all available data from socket */
 	    while(1)
 	    {
-              if(timerexpired) break; 
+              if(timerexpired) break;
 	      i=read(s,buf,1500);
               /* fprintf(stderr,"%d\n",i); */
-	      if(i<0) 
-              { 
+	      if(i<0)
+              {
                  failed++;
                  close(s);
                  goto nexttry;
