@@ -57,7 +57,7 @@ class Buffer {
   [[nodiscard]] auto ToStringView() const noexcept -> std::string_view;
 
  private:
-  DynamicByteArray buf_;
+  DynamicByteArray buf_{};
 };
 
 }    // namespace longlp

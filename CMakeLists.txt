@@ -28,9 +28,7 @@ set(LONGLP_PROJECT_BENCHMARK_DIR "${LONGLP_PROJECT_DIR}/benchmark")
 # ---- Related tools ----
 add_subdirectory(cmake)
 longlp_desired_compile_options(LONGLP_DESIRED_COMPILE_OPTIONS)
-# set(LONGLP_DESIRED_COMPILE_OPTIONS -Wno-everything)
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS_RELEASE -Ofast)
 
 # ---- Third parties ----
 find_package(fmt CONFIG REQUIRED)
@@ -40,12 +38,7 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 find_package(cxxopts CONFIG REQUIRED)
 
 add_subdirectory(${LONGLP_PROJECT_SRC_DIR})
-
 add_subdirectory(${LONGLP_PROJECT_DEMO_DIR})
-
-# TODO(longlp): recover these
-
-# add_subdirectory(${LONGLP_PROJECT_BENCHMARK_DIR})
 
 # ---- Test ----
 include(CTest)

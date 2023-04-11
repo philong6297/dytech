@@ -98,12 +98,14 @@ function(longlp_desired_compile_options output_variable)
   set(MSVC_compile_options_ /std:c++17 /c /EHsc /permissive-)
   if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-      list(APPEND Clang_compile_options_ -O0 -mno-omit-leaf-frame-pointer)
+      list(APPEND Clang_compile_options_ -O0 -mno-omit-leaf-frame-pointer -Wno-unsafe-buffer-usage)
       list(APPEND GNU_compile_options_ -O0 -fno-omit-frame-pointer)
     endif()
   endif()
-  set(${output_variable}
-      ${${CMAKE_CXX_COMPILER_ID}_compile_options_}
-      PARENT_SCOPE
-  )
+  if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(${output_variable}
+        ${${CMAKE_CXX_COMPILER_ID}_compile_options_}
+        PARENT_SCOPE
+    )
+  endif()
 endfunction()
