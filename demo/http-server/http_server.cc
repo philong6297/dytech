@@ -199,11 +199,16 @@ auto main(int argc, char* argv[]) -> int {
   }
 
   longlp::NetAddress net_address{address, port, longlp::Protocol::Ipv4};
+  const auto thread_num = std::thread::hardware_concurrency();
+  fmt::print(
+    "Setting up server on {} with dir {} in {} cores\n",
+    net_address.ToString(),
+    directory,
+    thread_num);
 
-  fmt::print("Setting up server on {}\n", net_address.ToString());
-
-  longlp::Server http_server(net_address, std::thread::hardware_concurrency());
-  auto cache = std::make_shared<longlp::Cache>(longlp::Cache::kDefaultCapacity);
+  longlp::Server http_server(net_address, thread_num);
+  auto cache =
+    std::make_shared<longlp::Cache>(longlp::Cache::kDefaultCapacity * 10U);
   http_server
     .OnHandle([&](longlp::Connection* client_connection) {
       longlp::http::ProcessHttpRequest(directory, cache, client_connection);

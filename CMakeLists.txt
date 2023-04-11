@@ -30,6 +30,7 @@ add_subdirectory(cmake)
 longlp_desired_compile_options(LONGLP_DESIRED_COMPILE_OPTIONS)
 # set(LONGLP_DESIRED_COMPILE_OPTIONS -Wno-everything)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS_RELEASE -Ofast)
 
 # ---- Third parties ----
 find_package(fmt CONFIG REQUIRED)

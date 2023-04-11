@@ -13,8 +13,7 @@ using std::chrono::microseconds;
 using std::chrono::milliseconds;
 using std::chrono::system_clock;
 
-// it should be inlined to have the most accuracy
-[[gnu::always_inline]] auto GetCurrentTimeMs() -> milliseconds;
+auto GetCurrentTimeMs() -> milliseconds;
 }    // namespace longlp
 
 #endif    // SRC_BASE_CHRONO_H_
