@@ -1,77 +1,46 @@
-<img src="image/ninja.jpeg" alt="TurtleChat Logo" height="250">
+# http-server
 
+## Features
 
------------------
+### **Design Decision**
+- Set non-blocking socket and edge-trigger handling mode based on [C10K problem](http://www.kegel.com/c10k.html)
+- Implemented the Reactor pattern with thread pool management: **Reactor per thread**.
+- Support HTTP/1.1 GET/HEAD request & response.
+- Support dynamic CGI request & response.
+- Implemented Caching (LRU for now).
+- Implemented asynchronous consumer-producer logging.
+### **Development Decision**
+- **Environment**: Linux
+- **Compiler**:
+  - LLVM/Clang 16
+  - GNU/GCC 11.3
+- **C++ Standard**: 20
+- **Coding Convention**:
+  - [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/)
+  - [Chromium Style Guide](https://chromium.googlesource.com/chromium/src/+/main/styleguide/c++/c++.md)
+  - Following Static Analysis warnings by `clang-tidy`, `clangd` and `Clang Static Analyzer`
+- **Build System**: CMake and Ninja
+- **Third parties** (managed by [vcpkg](https://github.com/microsoft/vcpkg)):
+  - Followed [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/) with [Microsoft.GSL](https://github.com/microsoft/GSL)
+  - Tested with [Catch2](https://github.com/catchorg/Catch2)
+  - String formatting with [fmtlib](https://github.com/fmtlib/fmt)
+  - Command-line parsing with [cxxopts](https://github.com/jarro2783/cxxopts)
+  - Use [Chromium's `base::NoDestructor`](/src/third_party/chromium/base/no_destructor.h) for wrapping function-local static variables.
 
-[![Build & Test](https://github.com/YukunJ/Turtle/actions/workflows/build_actions.yml/badge.svg?branch=main)](https://github.com/YukunJ/Turtle/actions/workflows/build_actions.yml)
-<a href="https://github.com/YukunJ/Turtle/blob/main/LICENSE"><img src="https://badgen.net/github/license/YukunJ/Turtle?color=orange" alt="license"></a>
-<a href="https://github.com/YukunJ/Turtle"><img src="https://img.shields.io/badge/Language-C++-red.svg"></a>
-<a href="https://github.com/YukunJ/Turtle"><img src="https://badgen.net/badge/OS Support/Linux,MacOS/cyan?list=1" alt="os"></a>
-<a href="https://github.com/YukunJ/Turtle"><img src="https://badgen.net/badge/Database/MySQL/white?list=1" alt="os"></a>
-<a href="https://github.com/YukunJ/Turtle/stargazers"><img src="https://badgen.net/github/stars/YukunJ/Turtle?color=yellow" alt="stars"></a>
-<a href="https://github.com/YukunJ/Turtle/network/members"><img src="https://badgen.net/github/forks/YukunJ/Turtle?color=black" alt="forks"></a>
-## TURTLE
+## **Server Design**
 
-[**中文文档** Chinese Version](./README_CN.md)
+![Server Design](image/server_design.jpg)
 
-**Turtle** is a C++17-based lightweight network library for web server mainly on Linux. It abstracts the tedious manipulations on the socket into elegant and reusable classes. It allows a fast server side setup where the custom business logic could be specified for each client TCP connection in the form of a callback function. It now supports HTTP GET/HEAD request and response as well.
+The above system architecture diagram briefly shows how the my project works in general:
 
-For any question, feel free to raise issue or pull request or drop me an [email](mailto:yukunj.cs@gmail.com) here.
-
-### Highlight
-
-+ Set non-blocking socket and edge-trigger handling mode to support high concurrency workload.
-+ Adopt the 'one reactor per thread' philosophy by [Shuo Chen](https://github.com/chenshuo) with thread pool management.
-+ Achieve low coupling and high extensible framework.
-+ Allow users to build custom server by only providing 2 callback functions.
-+ Support HTTP GET/HEAD request & response.
-+ Support dynamic CGI request & response.
-+ Support Caching mechanism.
-+ Support MySQL Database interaction.
-+ Compatible building with MacOS using kqueue.
-+ Support asynchronous consumer-producer logging.
-+ Unit test coverage by [Catch2](https://github.com/catchorg/Catch2) framework.
-
-### System Diagram
-
-<img src="image/system_architecture_en.png" alt="System Architecture New" height="450">
-
-The above system architecture diagram briefly shows how the **Turtle** framework works on a high level.
-
-1. The basic unit is a **Connection** which contains a **Socket** and a **Buffer** for bytes in-and-out. Users register a **callback** function for each connection.
+1. A **Connection** contains a **Socket** and a **Buffer** for bytes in-and-out. Users register a **callback** function for each connection.
 2. The system starts with an **Acceptor**, which contains one acceptor connection. It builds connection for each new client, and distribute the workload to one of the **Looper**s.
 3. Each **Poller** is associated with exactly one **Looper**. It does nothing but epoll, and returns a collection of event-ready connections back to the **Looper**.
 4. The **Looper** is the main brain of the system. It registers new client connection into the **Poller**, and upon the **Poller** returns back event-ready connections, it fetches their callback functions and execute them.
 5. The **ThreadPool** manages how many **Looper**s are there in the system to avoid over-subscription.
 6. Optionally there exists a **Cache** layer using LRU policy with tunable storage size parameters.
 
-The **Turtle** core network part is around 1000 lines of code, and the HTTP+CGI module is another 700 lines.
-
-### Docker
-
-If you are not a Linux system but still want to try out the **Turtle** on Linux for fun, we provide a Vagrant File to provision the Linux Docker. Notice as of current, **Turtle** is compatible with Linux and MacOS for build.
-
-1. Install [Vagrant](https://www.vagrantup.com/downloads) and [Docker](https://docs.docker.com/desktop/). For macOS, you may use homebrew to install Vagrant but **do not** use homebrew to install Docker. Instead, download Docker Desktop from the link above.
-
-2. Start the Docker application in the background
-
-3. Drag out the `Vagrantfile` and place it in parallel with the `Turtle` project folder. For example, consider the following file structure:
-
-```text
-/Turtle_Wrapper
-    - /Turtle
-    - /Vagrantfile
-```
-
-4. `cd` to the `Turtle_Wrapper` folder and run command `vagrant up --provider=docker`. This step should take a few minutes to build up the environment and install all the necessary tool chains.
-
-5. Enter the docker environment by `vagrant ssh developer`
-
-6. `cd` to the directory `/vagrant/Turtle`. This directory is in sync with the original `./Turtle`folder. You may modify the source code and its effect will be propagated to the docker's folder as well.
-
-7. Follow the steps in next section to build up the project.
-
-### Build
+### **Building Project**
 
 You may build the project using **CMake**.
 
@@ -80,7 +49,7 @@ Once you are at the root directory of this project, execute the followings:
 ```console
 // Setup environment (Linux)
 $ sh setup/setup.sh
-$ sudo systemctl start mysql 
+$ sudo systemctl start mysql
 $ sudo mysql < setup/setup.sql  // setup the default mysql role for testing
 
 // Build
@@ -99,7 +68,7 @@ $ make linecount
 
 To test the performance of **Turtle** server under high concurrency, we adopt [Webbench](http://cs.uccs.edu/~cs526/webbench/webbench.htm) as the stress testing tool.
 
-The source code of the Webbench is stored under the `./webbench` directory along with a simple testing shell script. 
+The source code of the Webbench is stored under the `./webbench` directory along with a simple testing shell script.
 
 We fully automated the process so that you can execute the benchmark test in one command:
 ```console
@@ -122,7 +91,7 @@ The performance improvement from **Cache** might not seem significant. Partly be
 
 When database connector comes into play, the indispensability of the **Cache** layer will be more obvious.
 
-In order to gain a better sense of comparative performance, we benchmarked a few other leading popular C++ network webserver on the Internet with the best configuration to our knowledge in order to be fair. 
+In order to gain a better sense of comparative performance, we benchmarked a few other leading popular C++ network webserver on the Internet with the best configuration to our knowledge in order to be fair.
 
 To reiterate, by no means should we judge different libraries only on benchmark testing of limited scope and possible misconfiguration by the unfamiliar like us. It's solely for the purpose for getting the magnitude right.
 
@@ -204,7 +173,7 @@ class Socket {
   auto Accept(NetAddress &client_address) -> int;
 
  private:
-  int fd_{-1}; 
+  int fd_{-1};
 };
 ```
 
@@ -236,7 +205,7 @@ There are many other components in **Turtle** that are easy to decouple and use 
 
 ### Usage
 
-#### General 
+#### General
 
 To setup a general custom server, user should create an instance of **TurtleServer** and then only needs to provide two callback functions:
 1. **OnAccept(Connection \*)**: A function to do extra business logic when accepting a new client connection.
@@ -288,10 +257,10 @@ $ ./echo_client
 
 #### HTTP
 
-The HTTP server [demo](./src/http/http_server.cpp) is under `./src/http` folder for reference as well. It supports **GET** and **HEAD** methods. A simple HTTP server could be set up in less than 50 lines with the help of **Turtle** core and http module. 
+The HTTP server [demo](./src/http/http_server.cpp) is under `./src/http` folder for reference as well. It supports **GET** and **HEAD** methods. A simple HTTP server could be set up in less than 50 lines with the help of **Turtle** core and http module.
 
 #### CGI
-The CGI module is built upon HTTP server and executes in the traditional parent-child cross-process way. After parsing the arguments, the [**Cgier**](./src/include/http/cgier.h) `fork` a child process to execute the cgi program and communicate back the result to parent process through a shared temporary file. 
+The CGI module is built upon HTTP server and executes in the traditional parent-child cross-process way. After parsing the arguments, the [**Cgier**](./src/include/http/cgier.h) `fork` a child process to execute the cgi program and communicate back the result to parent process through a shared temporary file.
 
 It assumes the cgi program resides under a `/cgi-bin` folder and arguments are separated by `&`. For example, if there is a remote CGI program `int add(int a, int b)` that adds up two integers. To compute `1+2=3`, The HTTP request line should be
 
@@ -321,7 +290,7 @@ int main(int argc, char* argv[]) {
     mysqler.ExecuteBlocking(command_insert);
     // query for whose firstname is Barack, asynchronously via std::async
     std::string command_query = "SELECT firstname, lastname FROM user WHERE firstname = 'Barack';"
-    auto fut = mysqler.ExecuteQueryNonBlocking(command_query);      
+    auto fut = mysqler.ExecuteQueryNonBlocking(command_query);
     sql::ResultSet result_set = fut.get();  // execute
     // maybe many people has firstname Barack, iterator
     size_t return_size = result_set->rowsCount();

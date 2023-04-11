@@ -8,9 +8,9 @@
 #include <atomic>
 #include <functional>
 #include <future>
-#include <map>
 #include <memory>
 #include <mutex>
+#include <unordered_map>
 
 #include "base/macros.h"
 
@@ -42,7 +42,7 @@ class Looper {
  private:
   std::unique_ptr<Poller> poller_;
   std::mutex mtx_;
-  std::map<int, std::unique_ptr<Connection>> connections_;
+  std::unordered_map<int /* fd */, std::unique_ptr<Connection>> connections_;
   bool exit_{false};
 };
 }    // namespace longlp
