@@ -23,6 +23,7 @@
 - Support dynamic CGI request & response.
 - Implemented Caching (LRU for now) reduce server load and increase responsiveness.
 - Implemented asynchronous consumer-producer logging.
+- Unit testing supported.
 ### 1.2. **Development Decision**
 - **Environment**: Linux
 - **Compiler**:
